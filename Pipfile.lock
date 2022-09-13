@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3b635d49f88cea6084d40623a041ebb65fc96765a2370e15961881e5d8ee892d"
+            "sha256": "6676606af7ce5091fbdc0de76f3bfb6d5bbf0f8bc3a2f84b84fc88d63af05378"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,10 @@
         ]
     },
     "default": {
+        "app-libraries": {
+            "editable": true,
+            "path": "."
+        },
         "asgiref": {
             "hashes": [
                 "sha256:1d2880b792ae8757289136f1db2b7b99100ce959b2aa57fd69dab783d05afac4",
