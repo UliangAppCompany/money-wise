@@ -32,6 +32,10 @@
             "index": "pypi",
             "version": "==4.1.1"
         },
+        "money-wise-applications": {
+            "editable": true,
+            "path": "."
+        },
         "project-applications": {
             "editable": true,
             "path": "."
