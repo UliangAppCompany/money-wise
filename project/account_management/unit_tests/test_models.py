@@ -48,7 +48,8 @@ def setup_fake_accounts(cursor):
                 (id, number, description, created_on, updated_on, should_debit_balance, credit_balance, debit_balance, category_id) 
             values 
                 (1, 1001, 'Public Bank-Business account', '2022-09-27 23:58:00', '2022-09-27 23:58:00', true, 20., 30., 3), 
-                (2, 1002, 'Petty cash', '2022-09-27 23:58:00', '2022-09-27 23:58:00', true, 5., 7., 3); 
+                (2, 1002, 'Petty cash', '2022-09-27 23:58:00', '2022-09-27 23:58:00', true, 5., 7., 3),  
+                (3, 2001, 'Company Credit Card', '2022-09-28 07:41:00', '2022-09-28 07:41:00', false, 35., 12., 9);
                 """
     )
 
@@ -68,7 +69,7 @@ def test_initialize_objects_in_database(cursor):
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("setup_fake_accounts")
-@pytest.mark.parametrize('pk,result', [(1, 10), (2,2)])
+@pytest.mark.parametrize("pk,result", [(1, 10), (2, 2), (3, 35 - 12)])
 def test_balance_property_returns_correct_balance(pk, result):
-    account = Account.objects.get(id=pk) 
+    account = Account.objects.get(id=pk)
     assert account.balance == result
