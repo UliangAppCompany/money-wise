@@ -11,6 +11,7 @@ project-applications = {editable = true, path = "."}
 pytest = "*"
 pytest-django = "*"
 black = "*"
+sqlalchemy = "*"
 
 [requires]
 python_version = "3.10"
