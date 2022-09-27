@@ -2,7 +2,7 @@
 
 # Create your tests here.
 import pytest
-from .models import *
+from account_management.models import *
 
 
 @pytest.mark.django_db
