@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 class Account(models.Model):
     number = models.IntegerField()
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     should_debit_balance = models.BooleanField(default=True)
@@ -27,19 +27,9 @@ class Account(models.Model):
 
 class AccountCategory(models.Model):
     name = models.CharField(max_length=50)
-    description = models.TextField(blank=True)
-    group = models.CharField(
-        max_length=2,
-        choices=[
-            ("AS", _("Assets")),
-            ("LI", _("Liabilities")),
-            ("CA", _("Capital")),
-            ("RV", _("Revenue")),
-            ("EX", _("Expense")),
-        ] 
-    )
+    description = models.TextField(blank=True, null=True)
     supercategory = models.ForeignKey(
-        "self", on_delete=models.CASCADE, related_name="subcategories",null=True 
+        "self", on_delete=models.CASCADE, related_name="subcategories", null=True
     )
 
     def get_all_accounts(self):
