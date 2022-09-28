@@ -16,6 +16,9 @@ class Account(models.Model):
         "AccountCategory", on_delete=models.CASCADE, related_name="accounts"
     )
 
+    def __repr__(self) -> str:
+        return f'<{self.number}-{self.description}>'
+        
     @property
     def balance(self):
         return (
