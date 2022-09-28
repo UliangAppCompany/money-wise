@@ -72,7 +72,7 @@ def test_initialize_objects_in_database(cursor):
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("setup_fake_accounts")
-@pytest.mark.parametrize("pk,result", [(1, 10), (2, 2), (3, 35 - 12)])
+@pytest.mark.parametrize("pk,result", [(1, 10), (2, 2), (7, 35 - 12)])
 def test_balance_property_returns_correct_balance(pk, result):
     account = Account.objects.get(id=pk)
     assert account.balance == result
