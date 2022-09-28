@@ -23,7 +23,7 @@ def setup_fake_accounts(cursor):
                 (1, 'Assets', null), 
                 (2, 'Current Assets', 1), 
                 (3, 'Cash', 2), 
-                (4, 'Account Receivables', 2), 
+                (4, 'Accounts Receivable', 2), 
                 (5, 'Fixed Assets', 1), 
                 (6, 'Equipment', 5), 
                 (7, 'Property', 5), 
@@ -81,7 +81,7 @@ def test_balance_property_returns_correct_balance(pk, result):
 @pytest.mark.usefixtures("setup_fake_accounts") 
 @pytest.mark.parametrize('pk,resultset', [
     (1, ['Current Assets', 'Fixed Assets']), 
-    (2, ['Cash', 'Account Receivables']), 
+    (2, ['Cash', 'Accounts Receivable']), 
     (5, ['Equipment', 'Property']), 
     (8, ['Current Liabilities']), 
     (9, ['Accounts Payable']), 
