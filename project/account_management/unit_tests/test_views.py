@@ -22,11 +22,16 @@ def test_post_new_category_returns_created_response(client):
         }, content_type='application/json') 
 
     assert response.status_code == 201 
-    assert response.json == {
+    assert response.json() == {
             'id': 2, 
             'name': 'Cash', 
             'description': 'All liquid assets stored in bank or petty cash', 
-            'supercategory': 1
+            'supercategory': {
+                'id': 1, 
+                'name': 'Assets', 
+                'description': None, 
+                'supercategory': None
+                } 
              }
 
 @pytest.mark.django_db
@@ -39,7 +44,7 @@ def test_after_post_database_is_updated(cursor, client):
         }, content_type='application/json') 
 
     cursor = cursor.execute('select * from account_management_accountcategory') 
-    assert cursor.fetchall() == 2 
+    assert len(cursor.fetchall()) == 2 
     
 
 @pytest.mark.django_db
