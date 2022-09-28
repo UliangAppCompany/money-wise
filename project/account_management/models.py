@@ -32,5 +32,17 @@ class AccountCategory(models.Model):
         "self", on_delete=models.CASCADE, related_name="subcategories", null=True
     )
 
-    def get_all_accounts(self):
-        return Account.objects.filter(category=self)
+    def __repr__(self): 
+        return f'<{self.name}>' 
+
+    def get_all_category_accounts(self):
+        stack = [self] 
+        resultset = []
+        while stack: 
+            cat = stack.pop() 
+            qs = Account.objects.filter(category=cat)
+            if qs.count():
+                resultset.extend([account for account in qs.all()])
+            else: 
+                stack.extend([subcat for subcat in cat.subcategories.all()])
+        return resultset
