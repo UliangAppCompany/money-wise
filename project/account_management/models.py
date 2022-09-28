@@ -17,8 +17,8 @@ class Account(models.Model):
     )
 
     def __repr__(self) -> str:
-        return f'<{self.number}-{self.description}>'
-        
+        return f"<{self.number}-{self.description}>"
+
     @property
     def balance(self):
         return (
@@ -35,20 +35,20 @@ class AccountCategory(models.Model):
         "self", on_delete=models.CASCADE, related_name="subcategories", null=True
     )
 
-    def __repr__(self): 
-        return f'<{self.name}>' 
+    def __repr__(self):
+        return f"<{self.name}>"
 
     def get_all_category_accounts(self):
-        stack = [self] 
+        stack = [self]
         resultset = []
-        while stack: 
-            cat = stack.pop() 
+        while stack:
+            cat = stack.pop()
             qs = Account.objects.filter(category=cat)
             if qs.count():
                 resultset.extend([account for account in qs.all()])
-            else: 
+            else:
                 stack.extend([subcat for subcat in cat.subcategories.all()])
         return resultset
-    
-    def get_category_subtotals(self): 
-        return sum(account.balance for account in self.get_all_category_accounts()) 
+
+    def get_category_subtotals(self):
+        return sum(account.balance for account in self.get_all_category_accounts())
