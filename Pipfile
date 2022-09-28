@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 django = "*"
 project-applications = {editable = true, path = "."}
+django-ninja = "*"
 
 [dev-packages]
 pytest = "*"
