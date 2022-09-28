@@ -91,4 +91,19 @@ def test_balance_property_returns_correct_balance(pk, result):
 def test_subcategories_retrievable_from_parent_category(pk, resultset): 
     account_category = AccountCategory.objects.get(id=pk)
     assert resultset == [subcat.name for subcat in account_category.subcategories.all()] 
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures('setup_fake_accounts') 
+@pytest.mark.parametrize('pk,result', [
+    (3, [1001, 1002]), 
+    (4, [1011, 1012]), 
+    (6, [1051]) , 
+    (7, [1061]) ,
+    (5, [1051, 1061]) , 
+    (2, [1001, 1002, 1011, 1012]) , 
+    (1, [1001, 1002, 1011, 1012, 1051,1061])
+])  
+def test_AccountCategory_get_all_accounts_method_returns_all_accounts_in_group(pk, result): 
+    category = AccountCategory.objects.get(id=pk) 
     
+    assert set(result) == {account.number for account in category.get_all_category_accounts()}
