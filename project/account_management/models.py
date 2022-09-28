@@ -49,3 +49,6 @@ class AccountCategory(models.Model):
             else: 
                 stack.extend([subcat for subcat in cat.subcategories.all()])
         return resultset
+    
+    def get_category_subtotals(self): 
+        return sum(account.balance for account in self.get_all_category_accounts()) 

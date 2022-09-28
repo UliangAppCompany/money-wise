@@ -107,3 +107,19 @@ def test_AccountCategory_get_all_accounts_method_returns_all_accounts_in_group(p
     category = AccountCategory.objects.get(id=pk) 
     
     assert set(result) == {account.number for account in category.get_all_category_accounts()}
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures('setup_fake_accounts') 
+@pytest.mark.parametrize('pk,result', [
+    (3, 30-20+7-5), 
+    (4, 100.5+12.), 
+    (2, 100.5+12+7-5+30-20), 
+    (6, 100_000) , 
+    (7, 350_000) , 
+    (5, 450_000), 
+    (1, 30-20+7-5+100.5+450_000+12)
+])
+def test_get_category_balance_subtotal(pk, result): 
+    category = AccountCategory.objects.get(id=pk) 
+    assert result == category.get_category_subtotals()
+    
