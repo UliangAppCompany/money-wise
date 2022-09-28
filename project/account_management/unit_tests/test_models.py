@@ -73,3 +73,19 @@ def test_initialize_objects_in_database(cursor):
 def test_balance_property_returns_correct_balance(pk, result):
     account = Account.objects.get(id=pk)
     assert account.balance == result
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("setup_fake_accounts") 
+@pytest.mark.parametrize('pk,resultset', [
+    (1, ['Current Assets', 'Fixed Assets']), 
+    (2, ['Cash', 'Account Receivables']), 
+    (5, ['Equipment', 'Property']), 
+    (8, ['Current Liabilities']), 
+    (9, ['Accounts Payable']), 
+    (11, ['Retained earnings']), 
+    (13, ['Salaries', 'Rents']), 
+    (16, ['Interest', 'Depreciation']) ])
+def test_subcategories_retrievable_from_parent_category(pk, resultset): 
+    account_category = AccountCategory.objects.get(id=pk)
+    assert resultset == [subcat.name for subcat in account_category.subcategories.all()] 
+    
