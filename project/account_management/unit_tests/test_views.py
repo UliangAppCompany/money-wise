@@ -43,13 +43,13 @@ def test_after_post_database_is_updated(cursor, client):
             'supercategory': 1
         }, content_type='application/json') 
 
-    cursor = cursor.execute('select * from account_management_accountcategory') 
+    cursor.execute('select * from account_management_accountcategory') 
     assert len(cursor.fetchall()) == 2 
     
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures('setup_initial_category')
-def test_relationship_between_category_is_reflected_in_the_model(client): 
+def test_relationship_between_category_is_reflected_in_the_model(client, cursor): 
     
     client.post('/api/account-management/account-category', {
             'name': 'Cash', 
@@ -57,8 +57,17 @@ def test_relationship_between_category_is_reflected_in_the_model(client):
             'supercategory': 1
         }, content_type='application/json') 
 
-    asset = AccountCategory.objects.get(id=1) 
-    assert ['Cash'] == [cat.name for cat in asset.subcategories.all()]
+    client.post('/api/account-management/account-category', {
+            'name': 'Accounts Receivable' ,
+            'description': 'Vendors that owe us money for goods sold.',
+            'supercategory': 1
+        }, content_type='application/json') 
+
+    cursor.execute("""
+        select name from account_management_accountcategory
+        where supercategory_id = 1 
+        """)
+    assert cursor.fetchall() == [('Cash', ), ('Accounts Receivable',)]
 
 
 @pytest.mark.django_db 
