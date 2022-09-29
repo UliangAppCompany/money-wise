@@ -1,12 +1,11 @@
 from typing import Optional
 import ninja
-from ninja import NinjaAPI 
+# from ninja import NinjaAPI 
 from account_management.models  import AccountCategory
+from account_management.api import SupercategoryUnavailableError, api
 
 # Create your views here.
 
-
-api = NinjaAPI() 
 
 class AccountCategoryResponseSchema(ninja.ModelSchema):
     supercategory: 'AccountCategoryResponseSchema' = None 
@@ -24,11 +23,15 @@ class AccountCategoryRequestSchema(ninja.ModelSchema):
         model_fields = ['name', 'description']
 
 
-@api.post('/account-management/account-category', response={201: AccountCategoryResponseSchema})
+@api.post('/account-category', response={201: AccountCategoryResponseSchema})
 def post_new_category(request, data:AccountCategoryRequestSchema): 
     cat = AccountCategory(name=data.name, description=data.description)
-    if data.supercategory is not None: 
-        parent_cat = AccountCategory.objects.get(id=data.supercategory)
+    if data.supercategory is not None:
+        try:  
+            parent_cat = AccountCategory.objects.get(id=data.supercategory)
+        except AccountCategory.DoesNotExist: 
+            raise SupercategoryUnavailableError()
         cat.supercategory = parent_cat
     cat.save()
     return 201, cat 
+
