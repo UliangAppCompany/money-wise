@@ -1,5 +1,6 @@
+from account_management.api import SupercategoryUnavailableError
+from account_management.models import AccountCategory
 import pytest
-from account_management.models import AccountCategory 
 
 @pytest.fixture 
 def setup_initial_category(cursor):
@@ -86,3 +87,17 @@ def test_post_base_account_category(client):
         'description': 'Liability accounts', 
         'supercategory': None
     }
+
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("setup_initial_category") 
+def test_400_error_is_raised_when_parent_category_is_not_detected(client): 
+    response = client.post('/api/account-management/account-category', {
+            'name': 'Liabilities', 
+            'description': 'Liability accounts', 
+            'supercategory': 0
+    }, content_type='application/json')  
+
+    assert response.status_code == 400 
+    assert response.json()['message'] == "Parent category not found."
+
