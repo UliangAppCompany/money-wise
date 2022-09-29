@@ -1,4 +1,4 @@
-from account_management.api import SupercategoryUnavailableError
+from account_management.views import SupercategoryUnavailableError
 from account_management.models import AccountCategory
 import pytest
 
@@ -101,3 +101,8 @@ def test_400_error_is_raised_when_parent_category_is_not_detected(client):
     assert response.status_code == 400 
     assert response.json()['message'] == "Parent category not found."
 
+
+def test_documentation_page_loads_from_the_correct_url(client): 
+    response = client.get('/api/account-management/docs') 
+
+    assert response.status_code == 200 
