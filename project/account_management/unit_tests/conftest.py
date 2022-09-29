@@ -3,8 +3,8 @@ from django.db import connection
 from django.test import Client
 
 
-@pytest.fixture 
-def client(): 
+@pytest.fixture
+def client():
     return Client()
 
 
