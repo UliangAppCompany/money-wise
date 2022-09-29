@@ -158,3 +158,51 @@ def test_cannot_add_duplicate_account_category_name(client):
     assert (
         response.json()["message"] == "Account Category named 'Assets' already exists."
     )
+
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("setup_fake_accounts")
+@pytest.mark.parametrize(
+    "pk,resource",
+    [
+        (1, {"id": 1, "name": "Assets", "description": None, "supercategory": None}),
+        (
+            2,
+            {
+                "id": 2,
+                "name": "Current Assets",
+                "description": None,
+                "supercategory": {
+                    "id": 1,
+                    "name": "Assets",
+                    "description": None,
+                    "supercategory": None,
+                },
+            },
+        ),
+        (
+            10,
+            {
+                "id": 10,
+                "name": "Accounts Payable",
+                "description": None,
+                "supercategory": {
+                    "id": 9,
+                    "name": "Current Liabilities",
+                    "description": None,
+                    "supercategory": {
+                        "id": 8,
+                        "name": "Liabilities",
+                        "description": None,
+                        "supercategory": None,
+                    },
+                },
+            },
+        ),
+    ],
+)
+def test_get_account_category(pk, resource, client):
+    response = client.get(f"/api/account-management/account-category/{pk}")
+
+    assert response.status_code == 200
+    assert response.json() == resource

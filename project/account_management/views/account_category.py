@@ -28,6 +28,12 @@ class AccountCategoryRequestSchema(ninja.ModelSchema):
         model_fields = ["name", "description"]
 
 
+@api.get("/account-category/{id}", response={200: AccountCategoryResponseSchema})
+def get_account_category(request, id: int):
+    cat = AccountCategory.objects.get(id=id)
+    return 200, cat
+
+
 @api.get("/account-category", response={200: list[AccountCategoryResponseSchema]})
 def get_account_categories(request):
     cats = AccountCategory.objects.all()
