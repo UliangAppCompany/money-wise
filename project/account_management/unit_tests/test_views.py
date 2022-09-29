@@ -61,3 +61,19 @@ def test_relationship_between_category_is_reflected_in_the_model(client):
     assert ['Cash'] == [cat.name for cat in asset.subcategories.all()]
 
 
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("setup_initial_category") 
+def test_post_base_account_category(client): 
+    response = client.post('/api/account-management/account-category', {
+        'name': 'Liabilities', 
+        'description': 'Liability accounts', 
+        'supercategory': None
+    }, content_type='application/json')  
+
+    assert response.status_code == 201 
+    assert response.json() == { 
+        'id':2, 
+        'name': 'Liabilities', 
+        'description': 'Liability accounts', 
+        'supercategory': None
+    }

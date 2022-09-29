@@ -1,3 +1,4 @@
+from typing import Optional
 import ninja
 from ninja import NinjaAPI 
 from account_management.models  import AccountCategory
@@ -17,7 +18,7 @@ class AccountCategoryResponseSchema(ninja.ModelSchema):
 AccountCategoryResponseSchema.update_forward_refs()
 
 class AccountCategoryRequestSchema(ninja.ModelSchema): 
-    supercategory: int 
+    supercategory: Optional[int] 
     class Config: 
         model=AccountCategory
         model_fields = ['name', 'description']
@@ -25,8 +26,9 @@ class AccountCategoryRequestSchema(ninja.ModelSchema):
 
 @api.post('/account-management/account-category', response={201: AccountCategoryResponseSchema})
 def post_new_category(request, data:AccountCategoryRequestSchema): 
-    parent_cat = AccountCategory.objects.get(id=data.supercategory)
     cat = AccountCategory(name=data.name, description=data.description)
-    cat.supercategory = parent_cat
+    if data.supercategory is not None: 
+        parent_cat = AccountCategory.objects.get(id=data.supercategory)
+        cat.supercategory = parent_cat
     cat.save()
     return 201, cat 
