@@ -21,7 +21,7 @@ AccountCategoryResponseSchema.update_forward_refs()
 
 
 class AccountCategoryRequestSchema(ninja.ModelSchema):
-    supercategory: Optional[int]
+    supercategory: Optional[int] = None
 
     class Config:
         model = AccountCategory
