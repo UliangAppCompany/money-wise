@@ -2,7 +2,7 @@ from typing import Optional
 import ninja
 # from ninja import NinjaAPI 
 from account_management.models  import AccountCategory
-from account_management.api import SupercategoryUnavailableError, api
+from account_management.views import SupercategoryUnavailableError, api
 
 # Create your views here.
 
