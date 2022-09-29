@@ -29,7 +29,7 @@ class Account(models.Model):
 
 
 class AccountCategory(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True, null=True)
     supercategory = models.ForeignKey(
         "self", on_delete=models.CASCADE, related_name="subcategories", null=True
