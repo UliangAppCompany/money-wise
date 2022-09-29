@@ -4,6 +4,7 @@ import ninja
 # from ninja import NinjaAPI
 from account_management.models import AccountCategory
 from account_management.views import SupercategoryUnavailableError, api
+from account_management.views import DuplicateValueError
 
 # Create your views here.
 
@@ -35,6 +36,11 @@ def get_account_categories(request):
 
 @api.post("/account-category", response={201: AccountCategoryResponseSchema})
 def post_new_category(request, data: AccountCategoryRequestSchema):
+    if AccountCategory.objects.filter(name=data.name).exists():
+        raise DuplicateValueError(
+            f"Account Category named '{data.name}' already exists."
+        )
+
     cat = AccountCategory(name=data.name, description=data.description)
     if data.supercategory is not None:
         try:

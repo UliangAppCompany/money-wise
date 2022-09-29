@@ -143,3 +143,18 @@ def test_list_of_account_categories(client):
 
     assert response.status_code == 200
     assert len(response.json()) == 18
+
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("setup_initial_category")
+def test_cannot_add_duplicate_account_category_name(client):
+    response = client.post(
+        "/api/account-management/account-category",
+        {"name": "Assets", "description": None, "supercategory": None},
+        content_type="application/json",
+    )
+
+    assert response.status_code == 403
+    assert (
+        response.json()["message"] == "Account Category named 'Assets' already exists."
+    )
