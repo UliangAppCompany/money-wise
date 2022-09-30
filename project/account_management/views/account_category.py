@@ -1,12 +1,33 @@
 from typing import Optional
 import ninja
+from ninja import NinjaAPI
 
 # from ninja import NinjaAPI
 from account_management.models import AccountCategory
-from account_management.views import SupercategoryUnavailableError, api
-from account_management.views import DuplicateValueError
+from account_management.views import (
+    SupercategoryUnavailableError,
+    DuplicateValueError,
+    ErrorMessageSchema,
+)
 
 # Create your views here.
+api = NinjaAPI(urls_namespace="account-category")
+
+
+@api.exception_handler(SupercategoryUnavailableError)
+def parent_category_unavailable(request, exc):
+    return api.create_response(
+        request,
+        ErrorMessageSchema(**{"message": "Parent category not found."}),
+        status=400,
+    )
+
+
+@api.exception_handler(DuplicateValueError)
+def duplicate_category_detected(request, exc):
+    return api.create_response(
+        request, ErrorMessageSchema(**{"message": str(exc)}), status=403
+    )
 
 
 class AccountCategoryResponseSchema(ninja.ModelSchema):
