@@ -18,7 +18,7 @@ def setup_initial_category(cursor):
 def test_post_new_category_returns_created_response(client):
 
     response = client.post(
-        "/api/account-management/account-category",
+        "/api/account-categories",
         {
             "name": "Cash",
             "description": "All liquid assets stored in bank or petty cash",
@@ -45,7 +45,7 @@ def test_post_new_category_returns_created_response(client):
 @pytest.mark.usefixtures("setup_initial_category")
 def test_after_post_database_is_updated(cursor, client):
     client.post(
-        "/api/account-management/account-category",
+        "/api/account-categories",
         {
             "name": "Cash",
             "description": "All liquid assets stored in bank or petty cash",
@@ -63,7 +63,7 @@ def test_after_post_database_is_updated(cursor, client):
 def test_relationship_between_category_is_reflected_in_the_model(client, cursor):
 
     client.post(
-        "/api/account-management/account-category",
+        "/api/account-categories",
         {
             "name": "Cash",
             "description": "All liquid assets stored in bank or petty cash",
@@ -73,7 +73,7 @@ def test_relationship_between_category_is_reflected_in_the_model(client, cursor)
     )
 
     client.post(
-        "/api/account-management/account-category",
+        "/api/account-categories",
         {
             "name": "Accounts Receivable",
             "description": "Vendors that owe us money for goods sold.",
@@ -95,7 +95,7 @@ def test_relationship_between_category_is_reflected_in_the_model(client, cursor)
 @pytest.mark.usefixtures("setup_initial_category")
 def test_post_base_account_category(client):
     response = client.post(
-        "/api/account-management/account-category",
+        "/api/account-categories",
         {
             "name": "Liabilities",
             "description": "Liability accounts",
@@ -117,7 +117,7 @@ def test_post_base_account_category(client):
 @pytest.mark.usefixtures("setup_initial_category")
 def test_400_error_is_raised_when_parent_category_is_not_detected(client):
     response = client.post(
-        "/api/account-management/account-category",
+        "/api/account-categories",
         {
             "name": "Liabilities",
             "description": "Liability accounts",
@@ -131,7 +131,7 @@ def test_400_error_is_raised_when_parent_category_is_not_detected(client):
 
 
 def test_documentation_page_loads_from_the_correct_url(client):
-    response = client.get("/api/account-management/docs")
+    response = client.get("/api/docs")
 
     assert response.status_code == 200
 
@@ -139,7 +139,7 @@ def test_documentation_page_loads_from_the_correct_url(client):
 @pytest.mark.django_db
 @pytest.mark.usefixtures("setup_fake_accounts")
 def test_list_of_account_categories(client):
-    response = client.get("/api/account-management/account-category")
+    response = client.get("/api/account-categories")
 
     assert response.status_code == 200
     assert len(response.json()) == 18
@@ -149,7 +149,7 @@ def test_list_of_account_categories(client):
 @pytest.mark.usefixtures("setup_initial_category")
 def test_cannot_add_duplicate_account_category_name(client):
     response = client.post(
-        "/api/account-management/account-category",
+        "/api/account-categories",
         {"name": "Assets", "description": None, "supercategory": None},
         content_type="application/json",
     )
@@ -202,7 +202,7 @@ def test_cannot_add_duplicate_account_category_name(client):
     ],
 )
 def test_get_account_category(pk, resource, client):
-    response = client.get(f"/api/account-management/account-category/{pk}")
+    response = client.get(f"/api/account-categories/{pk}")
 
     assert response.status_code == 200
     assert response.json() == resource

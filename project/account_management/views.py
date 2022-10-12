@@ -1,18 +1,37 @@
-from typing import Optional
+
+from typing import Optional 
+
 import ninja
 from ninja import NinjaAPI
 
-# from ninja import NinjaAPI
-from account_management.models import AccountCategory
-from account_management.views import (
-    SupercategoryUnavailableError,
-    DuplicateValueError,
-    ErrorMessageSchema,
-)
+from account_management.models import Account, AccountCategory
 
-# Create your views here.
-api = NinjaAPI(urls_namespace="account-category")
 
+api = NinjaAPI()
+
+
+class ErrorMessageSchema(ninja.Schema):
+    message: str
+
+
+class SupercategoryUnavailableError(Exception):
+    pass
+
+
+class DuplicateValueError(Exception):
+    pass
+
+
+class AccountResponseSchema(ninja.ModelSchema):
+    class Config:
+        model = Account
+        model_fields = ["id", "number"]
+
+
+@api.get("/accounts/{id}", response={200: AccountResponseSchema})
+def get_account(request, id: int):
+    acc = Account.objects.get(id=id)
+    return 200, acc
 
 @api.exception_handler(SupercategoryUnavailableError)
 def parent_category_unavailable(request, exc):
@@ -49,19 +68,19 @@ class AccountCategoryRequestSchema(ninja.ModelSchema):
         model_fields = ["name", "description"]
 
 
-@api.get("/account-category/{id}", response={200: AccountCategoryResponseSchema})
+@api.get("/account-categories/{id}", response={200: AccountCategoryResponseSchema})
 def get_account_category(request, id: int):
     cat = AccountCategory.objects.get(id=id)
     return 200, cat
 
 
-@api.get("/account-category", response={200: list[AccountCategoryResponseSchema]})
+@api.get("/account-categories", response={200: list[AccountCategoryResponseSchema]})
 def get_account_categories(request):
     cats = AccountCategory.objects.all()
     return 200, cats
 
 
-@api.post("/account-category", response={201: AccountCategoryResponseSchema})
+@api.post("/account-categories", response={201: AccountCategoryResponseSchema})
 def post_new_category(request, data: AccountCategoryRequestSchema):
     if AccountCategory.objects.filter(name=data.name).exists():
         raise DuplicateValueError(
