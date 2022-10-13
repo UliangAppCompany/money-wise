@@ -1,3 +1,4 @@
+from email.policy import default
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -38,55 +39,124 @@ Entity relationships
     Journal <- (1..*)  Entry <- (1..*) Transaction 
     Ledger <- (1..*) Account <- (1..*) Balance
     ControlAccount <- (1..*) Account
-    CarryForwardBalance <- (1..1) BroughtForwardBalance <- (1..*) Balance 
-
+    Entry <- (1..*) Balance
+    Account <- (1..*) Transaction 
 """
 
+class Journal(models.Model): 
+    """
+    Journal is a collection of entries. 
+    """
+    number = models.IntegerField()
+    name = models.CharField(max_length=100, null=True, blank=True)
+    description = models.TextField(null=True, blank=True) 
+    created_on = models.DateTimeField(auto_now_add=True) 
+    updated_on = models.DateTimeField(auto_now=True) 
+
+    def __repr__(self): 
+        return f"Journal({self.number} - {self.name})" 
+
+
+class Entry(models.Model): 
+    """
+    Entries are a collection of Transactions, date of transaction and description of transaction.  
+    """
+    date = models.DateTimeField(auto_now=True) 
+    notes = models.TextField(blank=True, default=None)
+
+    journal = models.ForeignKey(Journal, on_delete=models.CASCADE, 
+        related_names="entries") 
+
+
+class Transaction(models.Model): 
+    """
+    Transactions contain an account reference and a debit/crediting amount. 
+    """ 
+    account = models.ForeignKey("Account", on_delete=models.CASCADE)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_names="transactions")
+    debit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    credit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    description = models.TextField()
+    
+
+class Ledger(models.Model): 
+    """
+    Ledgers are a collection of Accounts. 
+    """
+    name = models.CharField(max_length=100) 
+    description = models.TextField() 
+    created_on = models.DateTimeField(auto_now_add=True) 
+    updated_on = models.DateTimeField(auto_now=True) 
+
+    @property 
+    def chartofaccounts(self): 
+        return self.accounts
+
+
 class Account(models.Model):
+    """
+    Accounts are a collection of Balances, identified by an account number, description and can be classisfied 
+    as one of Assets, Liabilities, Equity, Revenue and Expenses, and whether it is a debit or credit account.    
+    
+    ControlAccounts are Accounts which summarize the balance of many sub-accounts under their control. When 
+        Entries are posted from the Journal to the Ledger, both ControlAccount and Account balances 
+        are updated. The most recent balance of the ControlAccount must equals the total most recent balances 
+        of all Accounts under its control.
+
+        Examples of ControlAccounts are Cash, Accounts Payable, Accounts Receivable, Salaries, Inventory, 
+        Fixed Assets. 
+
+    """
+    ledger = models.ForeignKey(Ledger, on_delete=models.CASCADE, related_name="accounts")
     number = models.IntegerField()
     description = models.TextField(blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
-    should_debit_balance = models.BooleanField(default=True)
-    credit_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    debit_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    category = models.ForeignKey(
-        "AccountCategory", on_delete=models.CASCADE, related_name="accounts"
-    )
+    updated_on = models.DateTimeField(auto_now=True) 
+    debit_account = models.BooleanField(default=True)
+    
+    class AccountType(models.TextChoices): 
+        ASSET = 'AS', _('Asset') 
+        LIABILITY = 'LB', _('Liability') 
+        EQUIIY = 'EQ', _('Equity') 
+        REVENUE = 'RV', _('Revenue') 
+        EXPENSE = 'EX', _('Expense')
+    
+    category = models.CharField(choices=AccountType, default=AccountType.ASSET)
+
+    control = models.ForeignKey('self', on_delete=models.CASCADE, related_name="subaccounts")
 
     def __repr__(self) -> str:
-        return f"<{self.number}-{self.description}>"
+        return f"Account({self.number}-{self.description})"
 
-    @property
-    def balance(self):
-        return (
-            self.debit_balance - self.credit_balance
-            if self.should_debit_balance
-            else self.credit_balance - self.debit_balance
-        )
+    # @property
+    # def balance(self):
+    #     return (
+    #         self.debit_balance - self.credit_balance
+    #         if self.should_debit_balance
+    #         else self.credit_balance - self.debit_balance
+    #     )
 
 
-class AccountCategory(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    description = models.TextField(blank=True, null=True)
-    supercategory = models.ForeignKey(
-        "self", on_delete=models.CASCADE, related_name="subcategories", null=True
-    )
+class Balance(models.Model): 
+    """
+    Balances contain a journal reference, a debit/credit amount and credit/debit balances, date of transaction and 
+    description of transaction.   
 
-    def __repr__(self):
-        return f"<{self.name}>"
+    [Brought|Carry]ForwardBalances are a special kind of balances without debit/credit amount but consist only of a (preset) 
+    date of transaction, a default description and credit/debit balance only. 
+        
+        BroughtForwardBalances are created at the start of one accounting cycle from the previous cycle's CarryForwardBalance.
+        CarryForwardBalances are used to prepare trial balances and populate financial statments. 
+    """
 
-    def get_all_category_accounts(self):
-        stack = [self]
-        resultset = []
-        while stack:
-            cat = stack.pop()
-            qs = Account.objects.filter(category=cat)
-            if qs.count():
-                resultset.extend([account for account in qs.all()])
-            else:
-                stack.extend([subcat for subcat in cat.subcategories.all()])
-        return resultset
+    journal_entry = models.ForeignKey(Entry, on_delete=models.CASCADE) 
+    
+    date = models.DateTimeField(auto_now=True)
+    debit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)  
+    credit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)  
+    debit_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)  
+    credit_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    description = models.TextField()   
 
-    def get_category_subtotals(self):
-        return sum(account.balance for account in self.get_all_category_accounts())
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="balances")
+    
