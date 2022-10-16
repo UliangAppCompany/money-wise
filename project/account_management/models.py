@@ -78,6 +78,32 @@ class Transaction(models.Model):
     credit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     description = models.TextField()
 
+class Balance(models.Model): 
+    """
+    Balances contain a journal reference, a debit/credit amount and credit/debit balances, date of transaction and 
+    description of transaction.   
+
+    [Brought|Carry]ForwardBalances are a special kind of balances without debit/credit amount but consist only of a (preset) 
+    date of transaction, a default description and credit/debit balance only. 
+        
+        BroughtForwardBalances are created at the start of one accounting cycle from the previous cycle's CarryForwardBalance.
+        CarryForwardBalances are used to prepare trial balances and populate financial statments. 
+    """
+    class Meta: 
+        ordering = ['-date']
+    journal_entry = models.ForeignKey(Entry, on_delete=models.CASCADE, null=True) 
+    
+    date = models.DateTimeField()
+    debit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)  
+    credit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)  
+    debit_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)  
+    credit_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    description = models.TextField()   
+
+    account = models.ForeignKey("Account", on_delete=models.CASCADE, 
+        related_name="balances", null=True)
+
+
 class Account(models.Model):
     """
     Accounts are a collection of Balances, identified by an account number, description and can be classisfied 
@@ -154,25 +180,3 @@ class Ledger(models.Model):
 
         return account 
 
-class Balance(models.Model): 
-    """
-    Balances contain a journal reference, a debit/credit amount and credit/debit balances, date of transaction and 
-    description of transaction.   
-
-    [Brought|Carry]ForwardBalances are a special kind of balances without debit/credit amount but consist only of a (preset) 
-    date of transaction, a default description and credit/debit balance only. 
-        
-        BroughtForwardBalances are created at the start of one accounting cycle from the previous cycle's CarryForwardBalance.
-        CarryForwardBalances are used to prepare trial balances and populate financial statments. 
-    """
-
-    journal_entry = models.ForeignKey(Entry, on_delete=models.CASCADE) 
-    
-    date = models.DateTimeField(auto_now=True)
-    debit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)  
-    credit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)  
-    debit_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)  
-    credit_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    description = models.TextField()   
-
-    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="balances")
