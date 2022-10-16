@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import pytest 
 
 
@@ -33,10 +34,42 @@ def test_ledger_create_account(cursor, ledger):
         (200, "Checking", False, "LB")
     }
 
-
 @pytest.mark.django_db 
 @pytest.mark.usefixtures("add_accounts_to_ledger")
 def test_get_account_from_ledger(ledger): 
     cash_account = ledger.get_account(number=100)
     
     assert cash_account.description == "Cash"
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("add_accounts_to_ledger")
+def test_account_create_balance_entry(cursor, ledger): 
+    cash_account = ledger.get_account(number=100) 
+    fmt = '%Y-%m-%d %H:%M:%S'
+    tz = timezone.utc
+    cash_account.create_balance(debit_amount=1050, 
+        description="being collections from cash register", 
+        date=datetime.strptime("2022-10-16 16:00:00", fmt).replace(tzinfo=tz)) 
+
+    result = cursor.execute(
+        "select debit_amount, credit_amount, debit_balance, description " 
+        "from account_management_balance "
+        "where account_id = %s", [cash_account.id]).fetchall()
+
+    assert result == [(1050, 0, 1050, "being collections from cash register")]
+    
+    cash_account.create_balance(credit_amount=950, 
+        description="being payment of invoice-XXX", 
+        date=datetime.strptime("2022-10-17 15:30:00", fmt).replace(tzinfo=tz)) 
+
+    result = cursor.execute(
+        "select debit_amount, credit_amount, debit_balance, description " 
+        "from account_management_balance "
+        "where account_id = %s"
+        "order by date desc", [cash_account.id]).fetchall()
+
+    assert result == [
+        (0, 950, 100, "being payment of invoice-XXX"), 
+        (1050, 0, 1050, "being collections from cash register")
+    ]
+    
