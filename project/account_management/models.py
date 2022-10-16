@@ -65,7 +65,7 @@ class Entry(models.Model):
     notes = models.TextField(blank=True, default=None)
 
     journal = models.ForeignKey(Journal, on_delete=models.CASCADE, 
-        related_names="entries") 
+        related_name="entries") 
 
 
 class Transaction(models.Model): 
@@ -73,25 +73,10 @@ class Transaction(models.Model):
     Transactions contain an account reference and a debit/crediting amount. 
     """ 
     account = models.ForeignKey("Account", on_delete=models.CASCADE)
-    entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_names="transactions")
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name="transactions")
     debit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     credit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     description = models.TextField()
-    
-
-class Ledger(models.Model): 
-    """
-    Ledgers are a collection of Accounts. 
-    """
-    name = models.CharField(max_length=100) 
-    description = models.TextField() 
-    created_on = models.DateTimeField(auto_now_add=True) 
-    updated_on = models.DateTimeField(auto_now=True) 
-
-    @property 
-    def chartofaccounts(self): 
-        return self.accounts
-
 
 class Account(models.Model):
     """
@@ -107,7 +92,7 @@ class Account(models.Model):
         Fixed Assets. 
 
     """
-    ledger = models.ForeignKey(Ledger, on_delete=models.CASCADE, related_name="accounts")
+    ledger = models.ForeignKey("Ledger", on_delete=models.CASCADE, related_name="accounts", null=True)
     number = models.IntegerField()
     description = models.TextField(blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -121,9 +106,10 @@ class Account(models.Model):
         REVENUE = 'RV', _('Revenue') 
         EXPENSE = 'EX', _('Expense')
     
-    category = models.CharField(choices=AccountType, default=AccountType.ASSET)
+    category = models.CharField(max_length=2, choices=AccountType.choices, default=AccountType.ASSET)
 
-    control = models.ForeignKey('self', on_delete=models.CASCADE, related_name="subaccounts")
+    control = models.ForeignKey('self', on_delete=models.CASCADE, related_name="subaccounts", null=True
+        ,default=None)
 
     def __repr__(self) -> str:
         return f"Account({self.number}-{self.description})"
@@ -136,6 +122,34 @@ class Account(models.Model):
     #         else self.credit_balance - self.debit_balance
     #     )
 
+
+
+class Ledger(models.Model): 
+    """
+    Ledgers are a collection of Accounts. 
+    """
+    number = models.IntegerField()
+    name = models.CharField(max_length=100) 
+    description = models.TextField() 
+    created_on = models.DateTimeField(auto_now_add=True) 
+    updated_on = models.DateTimeField(auto_now=True) 
+
+    @property 
+    def chartofaccounts(self): 
+        return self.accounts
+
+    def create_account(self, number, description, debit_account, category, 
+                        created_on=None): 
+        params = {'number': number, 'description': description, 'debit_account': debit_account, 
+        'category': category}  
+        params |= {'created_on': created_on} if created_on else {} 
+
+        account = Account.objects.create(**params)
+        
+        self.accounts.add(account) 
+        self.save()
+
+        return account 
 
 class Balance(models.Model): 
     """
@@ -159,4 +173,3 @@ class Balance(models.Model):
     description = models.TextField()   
 
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="balances")
-    
