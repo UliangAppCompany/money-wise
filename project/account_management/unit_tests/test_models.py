@@ -34,4 +34,9 @@ def test_ledger_create_account(cursor, ledger):
     }
 
 
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("add_accounts_to_ledger")
+def test_get_account_from_ledger(ledger): 
+    cash_account = ledger.get_account(number=100)
     
+    assert cash_account.description == "Cash"
