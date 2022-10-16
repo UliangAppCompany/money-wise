@@ -138,6 +138,9 @@ class Ledger(models.Model):
     def chartofaccounts(self): 
         return self.accounts
 
+    def get_account(self, number): 
+        return self.accounts.filter(number=number).get() 
+
     def create_account(self, number, description, debit_account, category, 
                         created_on=None): 
         params = {'number': number, 'description': description, 'debit_account': debit_account, 
