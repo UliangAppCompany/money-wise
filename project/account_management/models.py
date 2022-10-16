@@ -140,6 +140,28 @@ class Account(models.Model):
     def __repr__(self) -> str:
         return f"Account({self.number}-{self.description})"
 
+    def create_balance(self, *, description, date, debit_amount=0, credit_amount=0): 
+        latest = self.balances.first()
+        latest_debit_balance, latest_credit_balance = 0,0
+        if latest: 
+            latest_debit_balance = latest.debit_balance 
+            latest_credit_balance = latest.credit_balance 
+        
+        if self.debit_account: 
+            latest_debit_balance += debit_amount - credit_amount 
+        else: 
+            latest_credit_balance +=  credit_amount - debit_amount
+        
+        current = Balance.objects.create(date=date, 
+            debit_amount=debit_amount, credit_amount=credit_amount, 
+            debit_balance=latest_debit_balance, credit_balance=latest_credit_balance,
+            description=description)
+        
+        self.balances.add(current)
+        self.save()
+        return current
+ 
+        
     # @property
     # def balance(self):
     #     return (
