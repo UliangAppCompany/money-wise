@@ -43,6 +43,17 @@ Entity relationships
     Account <- (1..*) Transaction 
 """
 
+class Entry(models.Model): 
+    """
+    Entries are a collection of Transactions, date of transaction and description of transaction.  
+    """
+    date = models.DateTimeField(auto_now=True) 
+    notes = models.TextField(blank=True, default=None)
+
+    journal = models.ForeignKey("Journal", on_delete=models.CASCADE, 
+        related_name="entries") 
+
+
 class Journal(models.Model): 
     """
     Journal is a collection of entries. 
@@ -56,18 +67,11 @@ class Journal(models.Model):
     def __repr__(self): 
         return f"Journal({self.number} - {self.name})" 
 
+    def create_entry(self, date, notes): 
+        entry = Entry.objects.create(date=date, notes=notes, journal=self)
+        return entry
 
-class Entry(models.Model): 
-    """
-    Entries are a collection of Transactions, date of transaction and description of transaction.  
-    """
-    date = models.DateTimeField(auto_now=True) 
-    notes = models.TextField(blank=True, default=None)
-
-    journal = models.ForeignKey(Journal, on_delete=models.CASCADE, 
-        related_name="entries") 
-
-
+    
 class Transaction(models.Model): 
     """
     Transactions contain an account reference and a debit/crediting amount. 
