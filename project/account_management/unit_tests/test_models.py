@@ -72,4 +72,15 @@ def test_account_create_balance_entry(cursor, ledger):
         (0, 950, 100, "being payment of invoice-XXX"), 
         (1050, 0, 1050, "being collections from cash register")
     ]
+
+@pytest.mark.django_db 
+def test_journal_create_entry(cursor, journal): 
+    now = datetime.utcnow()
+    journal.create_entry(date=now, notes="Being payment of invoice-XXX")
     
+    result = cursor.execute("select notes " 
+            "from account_management_entry " 
+            "where journal_id == %s", [journal.id]).fetchall() 
+
+    assert result == [('Being payment of invoice-XXX',)] 
+
