@@ -3,6 +3,9 @@ from typing import Literal
 from account_management.exceptions import DoubleEntryError, IncorrectEntryFormatError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.dispatch import Signal 
+
+
 
 # Create your models here.
 """
@@ -208,6 +211,8 @@ class Journal(models.Model):
     created_on = models.DateTimeField(auto_now_add=True) 
     updated_on = models.DateTimeField(auto_now=True) 
 
+    double_entry_created = Signal() 
+
     def __repr__(self): 
         return f"Journal({self.number} - {self.name})" 
 
@@ -240,4 +245,6 @@ class Journal(models.Model):
         entry = Entry.objects.create(date=date, notes=notes, journal=self) 
         entry.transactions.add(*transaction_objects)
         entry.save()
+
+        self.double_entry_created.send(sender=Entry, instance=entry)
 
