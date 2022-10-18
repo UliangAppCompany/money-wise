@@ -208,20 +208,20 @@ class Journal(models.Model):
     def __repr__(self): 
         return f"Journal({self.number} - {self.name})" 
 
-    def create_double_entry(self, date, notes, transactions: dict[int, TransDetails]): 
+    def create_double_entry(self, ledger, date, notes, transactions: dict[int, TransDetails]): 
         check = 0
         transaction_objects = [] 
         for account_number, trans_details in transactions.items(): 
             db_amount, cr_amount = trans_details['debit_amount'], trans_details['credit_amount']
             check += db_amount - cr_amount 
-            account = Ledger.get_account(account_number) 
+            account = ledger.get_account(number=account_number) 
             
             if db_amount and cr_amount:
                 raise IncorrectEntryFormatError("No two debit amount and credit amount can be nonzero.")
             elif cr_amount and db_amount==0: 
-                msg = f"From {account_number}-{account.description}"
+                msg = f"from {account_number}-{account.description} account"
             else: 
-                msg = f"To {account_number}-{account.description}"
+                msg = f"to {account_number}-{account.description} account"
             
             transaction = Transaction(account=account,  
                 debit_amount=db_amount,
@@ -235,5 +235,6 @@ class Journal(models.Model):
         Transaction.objects.bulk_create(transaction_objects)
 
         entry = Entry.objects.create(date=date, notes=notes, journal=self) 
-        entry.trasactions.add(*transaction_objects)
+        entry.transactions.add(*transaction_objects)
+        entry.save()
 
