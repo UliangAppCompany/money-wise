@@ -75,21 +75,17 @@ def test_account_create_balance_entry(cursor, ledger):
     ]
 
 @pytest.mark.django_db 
-@pytest.mark.usefixtures("add_accounts_to_ledger") 
-def test_journal_create_double_entry(cursor, ledger, journal): 
-    now = datetime.utcnow()
-    journal.create_double_entry(ledger, date=now, notes="being collections from cash register", transactions = {
-        300: {'credit_amount': 1050, 'debit_amount': 0}, 
-        100: {'credit_amount': 0, 'debit_amount': 1050}
-        })
-    
+@pytest.mark.usefixtures("add_accounts_to_ledger", "collect_from_cash_register")
+def test_journal_create_double_entry(cursor, journal): 
     result = cursor.execute("select notes from account_management_entry " 
             "where journal_id = %s", 
             [journal.id]).fetchall() 
 
-
     assert result == [('being collections from cash register', )] 
 
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("add_accounts_to_ledger", "collect_from_cash_register")
+def test_that_transaction_database_is_updated_with_double_entry(cursor, journal):
     result = cursor.execute("select number, debit_amount, credit_amount, account_management_transaction.description "
             "from account_management_account, account_management_transaction "
             "where account_management_account.id = account_id " 

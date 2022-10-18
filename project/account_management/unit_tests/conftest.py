@@ -1,3 +1,4 @@
+from datetime import datetime
 import pytest 
 from django.db import connection 
 
@@ -35,3 +36,12 @@ def add_accounts_to_ledger(ledger):
     ledger.create_account(number=300, description="Revenue", debit_account=False, 
         category="RV")
     
+
+@pytest.fixture 
+def collect_from_cash_register(ledger, journal): 
+    now = datetime.utcnow()
+    journal.create_double_entry(ledger, date=now, notes="being collections from cash register", 
+            transactions = {
+                300: {'credit_amount': 1050, 'debit_amount': 0}, 
+                100: {'credit_amount': 0, 'debit_amount': 1050}
+            })
