@@ -1,4 +1,5 @@
-from email.policy import default
+from typing import Literal
+from account_management.exceptions import DoubleEntryError, IncorrectEntryFormatError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -43,40 +44,6 @@ Entity relationships
     Account <- (1..*) Transaction 
 """
 
-class Journal(models.Model): 
-    """
-    Journal is a collection of entries. 
-    """
-    number = models.IntegerField()
-    name = models.CharField(max_length=100, null=True, blank=True)
-    description = models.TextField(null=True, blank=True) 
-    created_on = models.DateTimeField(auto_now_add=True) 
-    updated_on = models.DateTimeField(auto_now=True) 
-
-    def __repr__(self): 
-        return f"Journal({self.number} - {self.name})" 
-
-
-class Entry(models.Model): 
-    """
-    Entries are a collection of Transactions, date of transaction and description of transaction.  
-    """
-    date = models.DateTimeField(auto_now=True) 
-    notes = models.TextField(blank=True, default=None)
-
-    journal = models.ForeignKey(Journal, on_delete=models.CASCADE, 
-        related_name="entries") 
-
-
-class Transaction(models.Model): 
-    """
-    Transactions contain an account reference and a debit/crediting amount. 
-    """ 
-    account = models.ForeignKey("Account", on_delete=models.CASCADE)
-    entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name="transactions")
-    debit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    credit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    description = models.TextField()
 
 class Balance(models.Model): 
     """
@@ -91,7 +58,7 @@ class Balance(models.Model):
     """
     class Meta: 
         ordering = ['-date']
-    journal_entry = models.ForeignKey(Entry, on_delete=models.CASCADE, null=True) 
+    journal_entry = models.ForeignKey("Entry", on_delete=models.CASCADE, null=True) 
     
     date = models.DateTimeField()
     debit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)  
@@ -171,7 +138,6 @@ class Account(models.Model):
     #     )
 
 
-
 class Ledger(models.Model): 
     """
     Ledgers are a collection of Accounts. 
@@ -201,4 +167,48 @@ class Ledger(models.Model):
         self.save()
 
         return account 
+
+
+class Transaction(models.Model): 
+    """
+    Transactions contain an account reference and a debit/crediting amount. 
+    """ 
+    account = models.ForeignKey("Account", on_delete=models.CASCADE)
+    entry = models.ForeignKey("Entry", on_delete=models.CASCADE, 
+        related_name="transactions", null=True)
+    debit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    credit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    description = models.TextField()
+
+
+
+class Entry(models.Model): 
+    """
+    Entries are a collection of Transactions, date of transaction and description of transaction.  
+    """
+    date = models.DateTimeField(auto_now=True) 
+    notes = models.TextField(blank=True, default=None)
+
+    journal = models.ForeignKey("Journal", on_delete=models.CASCADE, 
+        related_name="entries") 
+
+
+TransDetails = dict[Literal['debit_amount'] | Literal['credit_amount'], float]
+
+
+class Journal(models.Model): 
+    """
+    Journal is a collection of entries. 
+    """
+    number = models.IntegerField()
+    name = models.CharField(max_length=100, null=True, blank=True)
+    description = models.TextField(null=True, blank=True) 
+    created_on = models.DateTimeField(auto_now_add=True) 
+    updated_on = models.DateTimeField(auto_now=True) 
+
+    def __repr__(self): 
+        return f"Journal({self.number} - {self.name})" 
+
+
+
 
