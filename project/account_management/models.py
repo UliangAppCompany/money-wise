@@ -1,3 +1,4 @@
+import contextlib
 from typing import Literal
 from account_management.exceptions import DoubleEntryError, IncorrectEntryFormatError
 from django.db import models
@@ -107,7 +108,9 @@ class Account(models.Model):
         return f"Account({self.number}-{self.description})"
 
     def create_balance(self, *, description, date, debit_amount=0, credit_amount=0): 
-        latest = self.balances.first()
+        latest = None
+        with contextlib.suppress(Balance.DoesNotExist): 
+            latest = self.balances.latest('date')
         latest_debit_balance, latest_credit_balance = 0,0
         if latest: 
             latest_debit_balance = latest.debit_balance 
