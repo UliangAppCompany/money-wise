@@ -100,3 +100,18 @@ def test_that_transaction_database_is_updated_with_double_entry(cursor, journal)
             (300, 0, 1050, "from 300-Revenue account")
             ]
 
+@pytest.mark.django_db
+@pytest.mark.usefixtures("add_accounts_to_ledger", "collect_from_cash_register")
+@pytest.mark.parametrize('account_num,expected', [
+    (100, ("being collections from cash register", 1050, 0, 1050, 0)), 
+    (300, ("being collections from cash register", 0, 1050, 0, 1050))
+    ] )
+def test_that_account_balance_is_updated_after_journal_entry(account_num, expected, cursor, ledger): 
+    result = cursor.execute("select account_management_balance.description, debit_amount, credit_amount, debit_balance, credit_balance " 
+            "from account_management_balance "
+            "join account_management_account "
+            "on account_id = account_management_account.id "
+            "where number = %s "
+            "and ledger_id = %s ", [account_num, ledger.id] ).fetchall()
+
+    assert result == [expected]
