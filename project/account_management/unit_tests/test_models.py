@@ -31,7 +31,8 @@ def test_ledger_create_account(cursor, ledger):
     assert len(result) ==2  
     assert set(result) == {
         (100, "Cash", True, "AS"), 
-        (200, "Checking", False, "LB")
+        (200, "Checking", False, "LB"), 
+        (300, "Revenue", False, "RV")
     }
 
 @pytest.mark.django_db 
@@ -74,13 +75,31 @@ def test_account_create_balance_entry(cursor, ledger):
     ]
 
 @pytest.mark.django_db 
-def test_journal_create_entry(cursor, journal): 
+@pytest.mark.usefixtures("add_accounts_to_ledger") 
+def test_journal_create_double_entry(cursor, journal): 
     now = datetime.utcnow()
-    journal.create_entry(date=now, notes="Being payment of invoice-XXX")
+    journal.create_double_entry(date=now, notes="being collections from cash register", transactions = {
+            300: {'CR': 1050 }, 
+            100: {'DB': 1050 }
+        })
     
-    result = cursor.execute("select notes " 
-            "from account_management_entry " 
-            "where journal_id == %s", [journal.id]).fetchall() 
+    result = cursor.execute("select notes from account_management_entry " 
+            "where journal_id = %s", 
+            [journal.id]).fetchall() 
 
-    assert result == [('Being payment of invoice-XXX',)] 
+
+    assert result == [('being collections from cash register', )] 
+
+    result = cursor.execute("select number, debit_amount, credit_amount, account_management_transaction.description "
+            "from account_management_account, account_management_transaction "
+            "where account_management_account.id = account_id " 
+            "and entry_id in " 
+            "(select id from account_management_entry "
+            "where journal_id = %s) ", 
+            [journal.id]).fetchall()
+
+    assert result == [
+            (100, 1050, 0, "to 100-Cash account"), 
+            (300, 0, 1050, "from 300-Revenue account")
+            ]
 

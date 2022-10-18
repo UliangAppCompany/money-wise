@@ -31,4 +31,7 @@ def add_accounts_to_ledger(ledger):
     
     ledger.create_account(number=200, description="Checking", debit_account=False, 
         category="LB")
+
+    ledger.create_account(number=300, description="Revenue", debit_account=False, 
+        category="RV")
     
