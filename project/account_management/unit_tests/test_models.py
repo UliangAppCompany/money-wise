@@ -1,74 +1,117 @@
-# from django.test import TestCase
-
-# Create your tests here.
-import pytest
-from django.db import connection
-from account_management.models import *
+from datetime import datetime, timezone
+import pytest 
 
 
-@pytest.fixture
-def cursor():
-    cur = connection.cursor()
-    yield cur
-    cur.close()
 
+@pytest.mark.django_db 
+def test_init_journal(cursor, journal): 
 
-@pytest.fixture
-def setup_fake_accounts(cursor):
-    cursor.execute(
-        """
-            insert into account_management_accountcategory 
-                (id, name, supercategory_id)
-            values 
-                (1, 'Assets', null), 
-                (2, 'Current Assets', 1), 
-                (3, 'Cash', 2), 
-                (4, 'Account Receivables', 2), 
-                (5, 'Fixed Assets', 1), 
-                (6, 'Equipment', 5), 
-                (7, 'Property', 5), 
-                (8, 'Liabilities', null), 
-                (9, 'Current Liabilities',  8), 
-                (10, 'Accounts Payable', 9), 
-                (11, 'Capital', null), 
-                (12, 'Retained earnings', 11), 
-                (13, 'Revenue', null), 
-                (14, 'Salaries', 13), 
-                (15, 'Rents', 13), 
-                (16, 'Expenses', null), 
-                (17, 'Interest', 16), 
-                (18, 'Depreciation', 16); 
+    result = cursor.execute("select number, name from account_management_journal") \
+        .fetchall()
 
-            """
-    )
-
-    cursor.execute(
-        """
-            insert into account_management_account 
-                (id, number, description, created_on, updated_on, should_debit_balance, credit_balance, debit_balance, category_id) 
-            values 
-                (1, 1001, 'Public Bank-Business account', '2022-09-27 23:58:00', '2022-09-27 23:58:00', true, 20., 30., 3), 
-                (2, 1002, 'Petty cash', '2022-09-27 23:58:00', '2022-09-27 23:58:00', true, 5., 7., 3); 
-                """
-    )
-
+    assert result == [(1, 'Company A Journal')]
 
 @pytest.mark.django_db
-def test_initialize_objects_in_database(cursor):
-    current_asset = AccountCategory.objects.create(
-        name="Current Asset",
-    )
-    cash_account = Account(number=1, category=current_asset)
+def test_init_ledger(cursor, ledger): 
+    
+    result = cursor.execute("select number, name from account_management_ledger") \
+        .fetchall() 
 
-    cash_account.save()
+    assert result == [(1, "Company A General Ledger")] 
 
-    cursor.execute("select * from account_management_account")
-    assert len(cursor.fetchall()) == 1
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("add_accounts_to_ledger")
+def test_ledger_create_account(cursor, ledger): 
+    
+    result = cursor.execute(
+        "select number, description, debit_account, category " 
+        "from account_management_account "
+        "where ledger_id = %s", [ledger.id]).fetchall() 
 
+    assert len(result) ==3  
+    assert set(result) == {
+        (100, "Cash", True, "AS"), 
+        (200, "Checking", False, "LB"), 
+        (300, "Revenue", False, "RV")
+    }
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("add_accounts_to_ledger")
+def test_get_account_from_ledger(ledger): 
+    cash_account = ledger.get_account(number=100)
+    
+    assert cash_account.description == "Cash"
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("add_accounts_to_ledger")
+def test_account_create_balance_entry(cursor, ledger): 
+    cash_account = ledger.get_account(number=100) 
+    fmt = '%Y-%m-%d %H:%M:%S'
+    tz = timezone.utc
+    cash_account.create_balance(debit_amount=1050, 
+        description="being collections from cash register", 
+        date=datetime.strptime("2022-10-16 16:00:00", fmt).replace(tzinfo=tz)) 
+
+    result = cursor.execute(
+        "select debit_amount, credit_amount, debit_balance, description " 
+        "from account_management_balance "
+        "where account_id = %s", [cash_account.id]).fetchall()
+
+    assert result == [(1050, 0, 1050, "being collections from cash register")]
+    
+    cash_account.create_balance(credit_amount=950, 
+        description="being payment of invoice-XXX", 
+        date=datetime.strptime("2022-10-17 15:30:00", fmt).replace(tzinfo=tz)) 
+
+    result = cursor.execute(
+        "select debit_amount, credit_amount, debit_balance, description " 
+        "from account_management_balance "
+        "where account_id = %s"
+        "order by date desc", [cash_account.id]).fetchall()
+
+    assert result == [
+        (0, 950, 100, "being payment of invoice-XXX"), 
+        (1050, 0, 1050, "being collections from cash register")
+    ]
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("add_accounts_to_ledger", "collect_from_cash_register")
+def test_journal_create_double_entry(cursor, journal): 
+    result = cursor.execute("select notes from account_management_entry " 
+            "where journal_id = %s", 
+            [journal.id]).fetchall() 
+
+    assert result == [('being collections from cash register', )] 
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("add_accounts_to_ledger", "collect_from_cash_register")
+def test_that_transaction_database_is_updated_with_double_entry(cursor, journal):
+    result = cursor.execute("select number, debit_amount, credit_amount, account_management_transaction.description "
+            "from account_management_account, account_management_transaction "
+            "where account_management_account.id = account_id " 
+            "and entry_id in " 
+            "(select id from account_management_entry "
+            "where journal_id = %s) " 
+            "order by number ", 
+            [journal.id]).fetchall()
+
+    assert result == [
+            (100, 1050, 0, "to 100-Cash account"), 
+            (300, 0, 1050, "from 300-Revenue account")
+            ]
 
 @pytest.mark.django_db
-@pytest.mark.usefixtures("setup_fake_accounts")
-@pytest.mark.parametrize('pk,result', [(1, 10), (2,2)])
-def test_balance_property_returns_correct_balance(pk, result):
-    account = Account.objects.get(id=pk) 
-    assert account.balance == result
+@pytest.mark.usefixtures("add_accounts_to_ledger", "collect_from_cash_register")
+@pytest.mark.parametrize('account_num,expected', [
+    (100, ("being collections from cash register", 1050, 0, 1050, 0)), 
+    (300, ("being collections from cash register", 0, 1050, 0, 1050))
+    ] )
+def test_that_account_balance_is_updated_after_journal_entry(account_num, expected, cursor, ledger): 
+    result = cursor.execute("select account_management_balance.description, debit_amount, credit_amount, debit_balance, credit_balance " 
+            "from account_management_balance "
+            "join account_management_account "
+            "on account_id = account_management_account.id "
+            "where number = %s "
+            "and ledger_id = %s ", [account_num, ledger.id] ).fetchall()
+
+    assert result == [expected]
