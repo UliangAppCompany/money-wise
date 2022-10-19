@@ -117,6 +117,11 @@ class Account(models.Model):
         self.subaccounts.add(*accounts) 
         self.save() 
 
+    def categorize(self, number): 
+        ledger = self.ledger
+        control_account = ledger.get_account(number=number)  
+        control_account.add_subaccounts(self) 
+        
     def create_balance(self, *, description, date, debit_amount=0, credit_amount=0): 
         latest = None
         with contextlib.suppress(Balance.DoesNotExist): 

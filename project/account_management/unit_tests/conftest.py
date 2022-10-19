@@ -45,3 +45,8 @@ def collect_from_cash_register(ledger, journal):
                 300: {'credit_amount': 1050, 'debit_amount': 0}, 
                 100: {'credit_amount': 0, 'debit_amount': 1050}
             })
+
+@pytest.fixture 
+def create_cash_accounts(ledger):
+    ledger.create_account(number=101, description="Cash in Bank 1", category="AS") 
+    ledger.create_account(number=102, description="Cash in Bank 2", category="AS") 
