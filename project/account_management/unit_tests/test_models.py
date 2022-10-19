@@ -129,3 +129,19 @@ def test_that_accounts_can_be_associated_with_a_control_account(cursor, ledger):
             "where control_id = %s ", [control_account.id]).fetchall()
 
     assert result == [(101, "Cash in Bank 1" ), (102, "Cash in Bank 2")]
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("add_accounts_to_ledger", "create_cash_accounts") 
+def test_that_can_add_a_control_account_to_an_account(cursor, ledger): 
+    account = ledger.get_account(number=101) 
+    account.categorize(number=100) 
+
+
+    result = cursor.execute("select number, description from "
+    "account_management_account "
+    "where control_id = ( " 
+    " select id from account_management_account " 
+    " where number=100 and ledger_id = %s)", 
+    [ledger.id]).fetchall() 
+
+    assert result == [(101, "Cash in Bank 1")]
