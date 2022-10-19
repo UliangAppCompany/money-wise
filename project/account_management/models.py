@@ -88,6 +88,9 @@ class Account(models.Model):
         Fixed Assets. 
 
     """
+    class Meta: 
+        ordering = ['number'] 
+
     ledger = models.ForeignKey("Ledger", on_delete=models.CASCADE, related_name="accounts", null=True)
     number = models.IntegerField()
     description = models.TextField(blank=True, null=True)
