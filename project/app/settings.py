@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "ninja",
     "account_management.apps.AccountManagementConfig",
+    "registration.apps.RegistrationConfig", 
 ]
 
 MIDDLEWARE = [

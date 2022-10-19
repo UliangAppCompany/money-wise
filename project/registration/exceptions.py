@@ -1,0 +1,2 @@
+class DuplicateUserNameError(Exception): 
+    pass 
