@@ -4,7 +4,7 @@ from account_management.models import Entry, Journal
 
 
 @receiver(Journal.double_entry_created, sender=Entry) 
-def after_update_to_entry(sender, **kwargs): 
+def record_balances_in_account(sender, **kwargs): 
     entry = kwargs.get('instance')
     for transaction in entry.transactions.all(): 
         account = transaction.account
