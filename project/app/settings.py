@@ -127,3 +127,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 NINJA_DOCS_VIEW = "redoc"
+
+
+DEFAULT_FROM_EMAIL = "admin@money-wise.com.my"
