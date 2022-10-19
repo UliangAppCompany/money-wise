@@ -88,6 +88,9 @@ class Account(models.Model):
         Fixed Assets. 
 
     """
+    class Meta: 
+        ordering = ['number'] 
+
     ledger = models.ForeignKey("Ledger", on_delete=models.CASCADE, related_name="accounts", null=True)
     number = models.IntegerField()
     description = models.TextField(blank=True, null=True)
@@ -109,6 +112,10 @@ class Account(models.Model):
 
     def __repr__(self) -> str:
         return f"Account({self.number}-{self.description})"
+
+    def add_subaccounts(self, *accounts): 
+        self.subaccounts.add(*accounts) 
+        self.save() 
 
     def create_balance(self, *, description, date, debit_amount=0, credit_amount=0): 
         latest = None
@@ -160,7 +167,7 @@ class Ledger(models.Model):
     def get_account(self, number): 
         return self.accounts.filter(number=number).get() 
 
-    def create_account(self, number, description, debit_account, category, 
+    def create_account(self, number, description, category,debit_account=True,  
                         created_on=None): 
         params = {'number': number, 'description': description, 'debit_account': debit_account, 
         'category': category}  
