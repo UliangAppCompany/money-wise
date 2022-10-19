@@ -1,7 +1,13 @@
 import pytest 
 from django.db import connection 
+from django.test import Client 
+
 from registration.service import create_user
 
+@pytest.fixture 
+def client(): 
+    client_ = Client()
+    return client_
 
 @pytest.fixture
 def cursor():
