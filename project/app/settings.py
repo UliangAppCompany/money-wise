@@ -130,3 +130,4 @@ NINJA_DOCS_VIEW = "redoc"
 
 
 DEFAULT_FROM_EMAIL = "admin@money-wise.com.my"
+EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
