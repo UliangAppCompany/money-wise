@@ -117,13 +117,12 @@ def test_that_account_balance_is_updated_after_journal_entry(account_num, expect
     assert result == [expected]
 
 @pytest.mark.django_db 
-@pytest.mark.usefixtures("add_accounts_to_ledger") 
+@pytest.mark.usefixtures("add_accounts_to_ledger", "create_cash_accounts") 
 def test_that_accounts_can_be_associated_with_a_control_account(cursor, ledger): 
     control_account = ledger.get_account(number=100) 
-
-    bank_account1 = ledger.create_account(number=101, description="Cash in Bank 1", category="AS") 
-    bank_account2 = ledger.create_account(number=102, description="Cash in Bank 2", category="AS") 
-
+    bank_account1 = ledger.get_account(number=101)
+    bank_account2 = ledger.get_account(number=102)
+    
     control_account.add_subaccounts(bank_account1, bank_account2)
 
     result = cursor.execute("select number, description from account_management_account "
