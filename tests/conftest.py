@@ -5,7 +5,12 @@ from django.test import Client
 
 
 from account_management.models import Journal, Ledger
+from registration.service import create_user
 
+
+@pytest.fixture 
+def register_new_user(): 
+    create_user('john@example.com', 'password') 
 
 @pytest.fixture 
 def cursor(): 
