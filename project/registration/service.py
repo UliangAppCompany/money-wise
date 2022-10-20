@@ -3,9 +3,9 @@ from django.db.utils import IntegrityError
 from registration.exceptions import DuplicateUserNameError  
 
 
-def create_user(username, password): 
+def create_user(username, token): 
     User = get_user_model() 
     try: 
-        User.objects.create_user(username, username, password)
+        User.objects.create_user(username, token)
     except IntegrityError: 
         raise DuplicateUserNameError(f"User {username} already registered.")
