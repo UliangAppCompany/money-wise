@@ -11,7 +11,7 @@ from registration.service import create_user
 @pytest.mark.django_db
 @pytest.mark.usefixtures("register_new_user")
 def test_create_new_user_service_creates_new_user_if_not_present(cursor): 
-    result = cursor.execute("select username from auth_user ").fetchone() 
+    result = cursor.execute("select username from registration_user ").fetchone() 
     assert result == ('john@example.com', )  
 
 @pytest.mark.django_db 
@@ -31,6 +31,7 @@ def test_that_validation_email_is_sent_when_new_user_is_successfully_saved_in_db
     assert message.subject == "New user validation link" 
     assert message.from_email == "admin@money-wise.com.my"
     assert message.to == ["john@example.com"]
+    assert 'registration/user/1/validate?token=abc' in message.body 
 
 @pytest.mark.django_db 
 @pytest.mark.usefixtures("register_new_user") 
