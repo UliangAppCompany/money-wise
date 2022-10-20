@@ -1,6 +1,8 @@
 from datetime import datetime
 import pytest 
 from django.db import connection 
+from django.test import Client 
+
 
 from account_management.models import Journal, Ledger
 
@@ -50,3 +52,8 @@ def collect_from_cash_register(ledger, journal):
 def create_cash_accounts(ledger):
     ledger.create_account(number=101, description="Cash in Bank 1", category="AS") 
     ledger.create_account(number=102, description="Cash in Bank 2", category="AS") 
+
+@pytest.fixture 
+def client(): 
+    client_ = Client() 
+    return client_ 
