@@ -48,6 +48,16 @@ def test_that_email_is_not_sent_when_user_info_is_updated():
 
 @pytest.mark.django_db 
 @pytest.mark.usefixtures("register_new_user") 
+def test_that_unvalidated_user_cannot_set_password(): 
+    user = get_user_model().objects.get(username='john@example.com')
+
+    with pytest.raises(UnvalidatedUserError) as exc: 
+        user.set_password('password') 
+        assert str(exc) == "Password cannot be set on unvalidated users."
+
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("register_new_user") 
 def test_that_get_full_name_method_on_user_returns_email(): 
     user = get_user_model().objects.get(username='john@example.com')
     assert user.get_full_name() == "john@example.com" 
