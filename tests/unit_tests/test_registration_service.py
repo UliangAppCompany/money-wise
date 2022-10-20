@@ -44,6 +44,13 @@ def test_that_email_is_not_sent_when_user_info_is_updated():
     
     assert len(mail.outbox) == 0 
 
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("register_new_user") 
+def test_that_clicked_validation_link_validates_user(client): 
+    response =client.get('/registration/user/1/validate?token=abc')
+    user = get_user_model().objects.get(username='john@example.com')
+    
+    assert user.is_validated == True
 
 
 @pytest.mark.django_db 
