@@ -9,9 +9,10 @@ from django.core.mail import send_mail
 def send_message(sender, **kwargs): 
     user = kwargs.pop("instance") 
     if kwargs['created']: 
-        user_email = user.email 
+        user_email_field = user.get_email_field_name() 
+        user_email = getattr(user, user_email_field) 
         subject = "New user validation link" 
-        message = ''
+        message = f'Please click here to validate your email: https://example.com/registration/user/{user.id}/validate?token={user.validation_token}'
         send_mail(subject, message, from_email=None, recipient_list=[user_email])
 
         
