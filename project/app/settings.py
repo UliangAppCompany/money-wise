@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "ninja",
     "account_management.apps.AccountManagementConfig",
+    "registration.apps.RegistrationConfig", 
 ]
 
 MIDDLEWARE = [
@@ -126,3 +127,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 NINJA_DOCS_VIEW = "redoc"
+
+
+DEFAULT_FROM_EMAIL = "admin@money-wise.com.my"
+EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
