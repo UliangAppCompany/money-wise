@@ -10,7 +10,7 @@ from registration.service import create_user
 
 @pytest.fixture 
 def register_new_user(): 
-    create_user('john@example.com', 'password') 
+    create_user('john@example.com', 'abc') 
 
 @pytest.fixture 
 def cursor(): 

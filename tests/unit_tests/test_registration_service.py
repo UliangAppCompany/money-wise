@@ -3,7 +3,7 @@ import pytest
 from django.core import mail 
 from django.contrib.auth import get_user_model 
 
-from registration.exceptions import DuplicateUserNameError
+from registration.exceptions import DuplicateUserNameError, UnvalidatedUserError
 from registration.service import create_user 
 
 
@@ -42,5 +42,18 @@ def test_that_email_is_not_sent_when_user_info_is_updated():
     user.first_name = 'John'
     user.save()
     
-
     assert len(mail.outbox) == 0 
+
+
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("register_new_user") 
+def test_that_get_full_name_method_on_user_returns_email(): 
+    user = get_user_model().objects.get(username='john@example.com')
+    assert user.get_full_name() == "john@example.com" 
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("register_new_user") 
+def test_that_get_short_name_method_on_user_returns_email(): 
+    user = get_user_model().objects.get(username='john@example.com')
+    assert user.get_short_name() == "john"
