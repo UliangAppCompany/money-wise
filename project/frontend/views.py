@@ -9,4 +9,7 @@ def account_management(request, ledger_id):
     user = get_user(request)
     ledger = user.ledgers.get(id=ledger_id)
     return render(request, 'frontend/account_management.html',
+       context={
+            'add_account_form': add_account_form, 
+            'ledger':ledger }
         )

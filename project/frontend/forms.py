@@ -1,7 +1,7 @@
 from django import forms
 from account_management.models import Account
 
-class AccountManagementAccount(forms.ModelForm):
+class AccountManagementAddAccountForm(forms.ModelForm):
     class Meta: 
         model = Account
         fields = ['number', 'description', 
