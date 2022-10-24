@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "account_management.apps.AccountManagementConfig",
     "registration.apps.RegistrationConfig", 
     "frontend.apps.FrontendConfig"
+    "api.apps.ApiConfig"
 ]
 
 MIDDLEWARE = [
