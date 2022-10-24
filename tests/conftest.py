@@ -1,3 +1,4 @@
+import os 
 from datetime import datetime
 import pytest 
 from django.db import connection 
@@ -7,6 +8,7 @@ from django.test import Client
 from account_management.models import Journal, Ledger
 from registration.service import create_user
 
+os.environ["NINJA_SKIP_REGISTRY"] = "yes"
 
 @pytest.fixture 
 def register_new_user(): 

@@ -18,7 +18,7 @@ def set_up_validated_user(ledger):
 @pytest.mark.usefixtures("register_new_user", "set_up_validated_user")
 def test_add_account_page_loads(client): 
     client.login(username='john@example.com', password='password')
-    response = client.get('/ledger/1/account')
+    response = client.get('/ledger/1/account/new')
 
     assert response.status_code == 200 
 
@@ -27,9 +27,9 @@ def test_add_account_page_loads(client):
 def test_template_renders_with_correct_context(client): 
 
     client.login(username='john@example.com', password='password')
-    response = client.get('/ledger/1/account') 
+    response = client.get('/ledger/1/account/new') 
     context = response.context 
 
-    assert isinstance(context['add_account_form'], AccountManagementAddAccountForm)  
+    assert isinstance(context['form'], AccountManagementAddAccountForm)  
     assert isinstance(context['ledger'], Ledger)
-    assert 'frontend/account_management.html' in [template.name for template in response.templates]
+    assert 'frontend/add_new_account.html' in [template.name for template in response.templates]
