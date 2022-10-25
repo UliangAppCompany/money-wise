@@ -19,5 +19,10 @@ def add_account(request, ledger_id):
             'post_url': add_account_url}
         )
 
-def list_accounts(request): 
-    ...
+def ledger_management(request, ledger_id): 
+    if request.method == "POST": 
+        # [TODO]: do post 
+        pass        
+    elif request.method == "GET": 
+        # [TODO]: return a list of accounts in ledger. 
+        pass
