@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block body %}
- <form id="add-account-form" method="post" action="{% url 'list-accounts' ledger.id %}">
+ <form id="add-account-form" method="post" action="{% url 'ledger-page' ledger.id %}">
     {{ add_account_form }}
     <input type="submit" value="Submit" id="submit-button">
  </form>
@@ -15,17 +15,19 @@
 {{ post_url|json_script:"post-url" }}
 
 <script>
-    var postUrl = JSON.parse(document.getElementById("post-url").textContent)
+    var postUrl = JSON.parse(document.getElementById("post-url").textContent);
 
     $('#submit-and-continue-button').click(function(event){
-        event.preventDefault()
-        $(this).prop("disabled", true)
+        event.preventDefault();
+        $(this).prop("disabled", true);
 
-        var dataArray = $('#add-account-form').serializeArray()
-        var data =  {}
+        var form = $('#add-account-form');
+        var dataArray = form.serializeArray();
+        var data =  {};
         dataArray.forEach(function (elem) {
             data[elem['name']] = elem['value']
-        })
+        });
+        
         $.post(postUrl, data, function (result) {
             console.log(result)
         })
@@ -37,8 +39,10 @@
             if (button.prop('disabled')) {
                 button.prop('disabled', false)
             }
-        }, "json")
-    })
+        });
+
+        form.trigger("reset")
+    });
 </script>
 
 
