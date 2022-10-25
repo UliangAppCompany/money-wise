@@ -5,14 +5,16 @@
 {% endblock %}
 
 {% block body %}
- <form id="add-account-form" method="post" action="{% url 'ledger-page' ledger.id %}">
-    {{ add_account_form }}
+<form id="add-account-form">
+    {{ form }}
     <input type="submit" value="Submit" id="submit-button">
+    <input type="submit" value="Submit and continue" id="submit-and-continue-button">
+    <input type="reset" value="Reset form">
  </form>
-    <button id="submit-and-continue-button">Submit and continue</button>
 {% endblock %}
+{{ post_url|json_string:"post-url"}}
+{{ ledger_page|json_string:"ledger-url"}}
 
-{{ post_url|json_script:"post-url" }}
 
 <script>
     var postUrl = JSON.parse(document.getElementById("post-url").textContent);
