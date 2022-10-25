@@ -1,7 +1,7 @@
 {% extends 'frontend/base.html' %}
 
 {% block script %}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -10,41 +10,42 @@
     <input type="submit" value="Submit" id="submit-button">
     <input type="submit" value="Submit and continue" id="submit-and-continue-button">
     <input type="reset" value="Reset form">
- </form>
+</form>
 {% endblock %}
 {{ post_url|json_string:"post-url"}}
 {{ ledger_page|json_string:"ledger-url"}}
 
 
-<script>
-    var postUrl = JSON.parse(document.getElementById("post-url").textContent);
-
-    $('#submit-and-continue-button').click(function(event){
+<script type="text/javascript">
+    var postUrl = JSON.parse($("#post-url").text());
+    var ledgerUrl = JSON.parse($("#ledger-url").text());
+    
+    $('input[type="submit"]').on("submit", function (event) {
         event.preventDefault();
         $(this).prop("disabled", true);
 
         var form = $('#add-account-form');
         var dataArray = form.serializeArray();
-        var data =  {};
+        var data = {};
         dataArray.forEach(function (elem) {
             data[elem['name']] = elem['value']
         });
-        
+
         $.post(postUrl, data, function (result) {
             console.log(result)
         })
-        .fail( function(error) {
-            console.log(error)
-        })
-        .always(function(result) {
-            button = $('#submit-and-continue-button')
-            if (button.prop('disabled')) {
-                button.prop('disabled', false)
-            }
-        });
-
-        form.trigger("reset")
-    });
+            .fail(function (error) {
+                console.log(error)
+            })
+            .always(function (result) {
+                button = $('#submit-and-continue-button')
+                if (button.prop('disabled')) {
+                    button.prop('disabled', false)
+                }
+            });
+        if ($(this).is('#submit-button')) {
+            window.location.href = ledgerUrl;
+        }
+        form.trigger("reset");
+    })
 </script>
-
-
