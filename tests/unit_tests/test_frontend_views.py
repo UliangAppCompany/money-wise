@@ -41,3 +41,19 @@ def test_template_renders_with_correct_context(client):
     assert isinstance(context['form'], AccountManagementAddAccountForm)  
     assert isinstance(context['ledger'], Ledger)
     assert 'frontend/add_account_page.html' in [template.name for template in response.templates]
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("register_new_user", "set_up_validated_user", "login")
+def test_can_post_to_ledger_page(response): 
+    assert response.status_code == 200
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("register_new_user", "set_up_validated_user", "login", 
+                        "response")
+def test_post_to_ledger_page_updates_db(cursor):
+    result = cursor.execute("select number, description, debit_account from " 
+        "account_management_account "
+        "where number = 101 and " 
+        "ledger_id = 1").fetchone() 
+
+    assert result == (101, 'Bank A Account', True)  
