@@ -1,10 +1,9 @@
-import re
-from typing import List
 from django.shortcuts import render
 from django.contrib.auth import get_user
 from django.urls import reverse
 
 from .forms import AccountManagementAddAccountForm
+from account_management.models import Ledger 
 
 # Create your views here.
 def add_account(request, ledger_id): 
@@ -21,10 +20,6 @@ def add_account(request, ledger_id):
             'ledger_page': ledger_page}
         )
 
-def ledger_management(request, ledger_id): 
-    if request.method == "POST": 
-        # [TODO]: do post 
-        pass        
-    elif request.method == "GET": 
-        # [TODO]: return a list of accounts in ledger. 
-        pass
+def ledger_page(request, ledger_id): 
+    items = Ledger.objects.get(id=ledger_id).accounts.all()
+    # [TODO]: pass on to ledger page
