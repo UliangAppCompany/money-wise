@@ -14,20 +14,28 @@ def set_up_validated_user(ledger):
     user.ledgers.add(ledger)
     user.save() 
 
-@pytest.mark.django_db 
-@pytest.mark.usefixtures("register_new_user", "set_up_validated_user")
-def test_add_account_page_loads(client): 
+@pytest.fixture 
+def login(client): 
     client.login(username='john@example.com', password='password')
-    response = client.get('/ledger/1/account/new')
+
+@pytest.fixture 
+def response(client): 
+    response_ = client.post('/ledger/1/account', data={'number': 101, 'description': 'Bank A Account', 'debit_account': True })
+    return response_
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("register_new_user", "set_up_validated_user", 
+                        "login")
+def test_add_account_page_loads(client): 
+    response = client.get('/ledger/1/account')
 
     assert response.status_code == 200 
 
 @pytest.mark.django_db 
-@pytest.mark.usefixtures("register_new_user", "set_up_validated_user")
+@pytest.mark.usefixtures("register_new_user", "set_up_validated_user", 
+            "login")
 def test_template_renders_with_correct_context(client): 
-
-    client.login(username='john@example.com', password='password')
-    response = client.get('/ledger/1/account/new') 
+    response = client.get('/ledger/1/account') 
     context = response.context 
 
     assert isinstance(context['form'], AccountManagementAddAccountForm)  
