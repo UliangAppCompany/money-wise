@@ -13,6 +13,7 @@ pytest = "*"
 pytest-django = "*"
 black = "*"
 sqlalchemy = "*"
+selenium = "*"
 
 [requires]
 python_version = "3.10"
