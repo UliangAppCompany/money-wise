@@ -32,4 +32,4 @@ def test_template_renders_with_correct_context(client):
 
     assert isinstance(context['form'], AccountManagementAddAccountForm)  
     assert isinstance(context['ledger'], Ledger)
-    assert 'frontend/add_new_account.html' in [template.name for template in response.templates]
+    assert 'frontend/add_account_page.html' in [template.name for template in response.templates]
