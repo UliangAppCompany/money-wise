@@ -1,6 +1,7 @@
 {% extends 'frontend/base.html' %}
+{% load static %}
 
-{% block script %}
+{% block scripts %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 {% endblock %}
 
@@ -12,40 +13,9 @@
     <input type="reset" value="Reset form">
 </form>
 {% endblock %}
-{{ post_url|json_string:"post-url"}}
-{{ ledger_page|json_string:"ledger-url"}}
+{{ post_url|json_script:"post-url"}}
+{{ ledger_page|json_script:"ledger-url"}}
 
 
-<script type="text/javascript">
-    var postUrl = JSON.parse($("#post-url").text());
-    var ledgerUrl = JSON.parse($("#ledger-url").text());
-    
-    $('input[type="submit"]').on("submit", function (event) {
-        event.preventDefault();
-        $(this).prop("disabled", true);
-
-        var form = $('#add-account-form');
-        var dataArray = form.serializeArray();
-        var data = {};
-        dataArray.forEach(function (elem) {
-            data[elem['name']] = elem['value']
-        });
-
-        $.post(postUrl, data, function (result) {
-            console.log(result)
-        })
-            .fail(function (error) {
-                console.log(error)
-            })
-            .always(function (result) {
-                button = $('#submit-and-continue-button')
-                if (button.prop('disabled')) {
-                    button.prop('disabled', false)
-                }
-            });
-        if ($(this).is('#submit-button')) {
-            window.location.href = ledgerUrl;
-        }
-        form.trigger("reset");
-    })
+<script type="text/javascript" src="{% static 'frontend/js/add_account.js' %}">
 </script>
