@@ -59,3 +59,8 @@ def test_post_to_ledger_page_updates_db(cursor):
         "ledger_id = 1").fetchone() 
 
     assert result == (101, 'Bank A Account', True)  
+
+@pytest.mark.django_db 
+@pytest.mark.usefixtures("register_new_user", "set_up_validated_user") 
+def test_that_cannot_make_unauthenticated_api_calls(response): 
+    assert response.status_code == 401
