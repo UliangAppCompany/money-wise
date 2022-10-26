@@ -20,7 +20,9 @@ def login(client):
 
 @pytest.fixture 
 def response(client): 
-    response_ = client.post('/ledger/1/account', data={'number': 101, 'description': 'Bank A Account', 'debit_account': True })
+    response_ = client.post('/api/ledger/1/account',
+        data={'number': 101, 'description': 'Bank A Account', 'debit_account': True },
+        content_type='application/json')
     return response_
 
 @pytest.mark.django_db 
@@ -48,8 +50,8 @@ def test_can_post_to_ledger_page(response):
     assert response.status_code == 200
 
 @pytest.mark.django_db 
-@pytest.mark.usefixtures("register_new_user", "set_up_validated_user", "login", 
-                        "response")
+@pytest.mark.usefixtures("register_new_user", "set_up_validated_user", 
+                        "login", "response") 
 def test_post_to_ledger_page_updates_db(cursor):
     result = cursor.execute("select number, description, debit_account from " 
         "account_management_account "
