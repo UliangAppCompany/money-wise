@@ -10,7 +10,8 @@ def add_account(request, ledger_id):
     add_account_form =  AccountManagementAddAccountForm()
     user = get_user(request)
     ledger = user.ledgers.get(id=ledger_id)
-    add_account_url = reverse("api-1:add-new-account")
+    add_account_url = reverse("api-1:add_new_account", kwargs={'ledger_id': 
+        ledger_id})
     ledger_page = reverse("ledger-page", args=[ledger_id])
     return render(request, 'frontend/add_account_page.html',
        context={
