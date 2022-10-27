@@ -1,9 +1,11 @@
 from datetime import datetime
+
 import pytest 
+from selenium import webdriver
+
 from django.db import connection 
 from django.test import Client 
 from django.contrib.auth import get_user_model
-
 
 from account_management.models import Journal, Ledger
 from registration.service import create_user
@@ -70,3 +72,15 @@ def create_cash_accounts(ledger):
 def client(): 
     client_ = Client() 
     return client_ 
+
+@pytest.fixture 
+def driver(): 
+    driver_ = webdriver.Chrome()
+    yield driver_ 
+    driver_.close()
+
+@pytest.fixture 
+def user_creates_ledger(ledger): 
+    user = get_user_model().objects.get(username='john@example.com')
+    user.ledgers.add(ledger)
+    user.save() 
