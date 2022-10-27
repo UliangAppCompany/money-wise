@@ -3,6 +3,7 @@ from datetime import datetime
 import pytest 
 from django.db import connection 
 from django.test import Client 
+from django.contrib.auth import get_user_model
 
 
 from account_management.models import Journal, Ledger
@@ -14,6 +15,13 @@ os.environ["NINJA_SKIP_REGISTRY"] = "yes"
 def register_new_user(): 
     create_user('john@example.com', 'abc') 
 
+@pytest.fixture 
+def validate_new_user(): 
+    user = get_user_model().objects.get(username='john@example.com')
+    user.is_validated = True 
+    user.set_password('password') 
+    user.save()
+    
 @pytest.fixture 
 def cursor(): 
     cursor_ = connection.cursor() 
