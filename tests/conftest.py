@@ -72,3 +72,9 @@ def create_cash_accounts(ledger):
 def client(): 
     client_ = Client() 
     return client_ 
+
+@pytest.fixture 
+def user_creates_ledger(ledger): 
+    user = get_user_model().objects.get(username='john@example.com')
+    user.ledgers.add(ledger)
+    user.save() 
