@@ -8,4 +8,6 @@ class AccountManagementAccount(forms.ModelForm):
                 'debit_account', 'category',  
                 'is_control']
                 
-        
+class AuthenticationForm(forms.Form): 
+    username = forms.EmailField(required=True, max_length=100) 
+    password = forms.PasswordInput()
