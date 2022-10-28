@@ -2,8 +2,9 @@ from django.shortcuts import render
 from django.contrib.auth import get_user
 from django.urls import reverse
 
-from .forms import AccountManagementAddAccountForm
 from account_management.models import Ledger 
+
+from .forms import AccountManagementAddAccountForm, AuthenticationForm
 
 # Create your views here.
 def add_account(request, ledger_id): 
@@ -24,3 +25,11 @@ def add_account(request, ledger_id):
 def ledger_page(request, ledger_id): 
     items = Ledger.objects.get(id=ledger_id).accounts.all()
     # [TODO]: pass on to ledger page
+
+def login_page(request): 
+    form = AuthenticationForm()
+    login_api_endpoint = reverse('api-1:login_user')
+    return render(request, 'frontend/login_page.html', context={
+        'form': form, 
+        'post_url': login_api_endpoint
+    })

@@ -18,13 +18,8 @@ def login_response(client):
     return response
 
 
-def test_login_route(login_response): 
+def test_login_route(login_response, client): 
     assert login_response.status_code == 200 
-
-def test_user_can_login_to_the_application(client): 
-    client.post('/api/login', data={'username': 'john@example.com', 
-        'password': 'password'},  
-        content_type = 'application/json')
 
     factory = RequestFactory() 
     request = factory.get('/') 
@@ -32,3 +27,8 @@ def test_user_can_login_to_the_application(client):
 
     user = get_user(request)
     assert user.username == 'john@example.com' 
+
+def test_login_page_loads(client): 
+    response = client.get('/login') 
+
+    assert response.status_code == 200 
