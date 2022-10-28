@@ -32,3 +32,8 @@ def test_user_can_login_to_the_application(client):
 
     user = get_user(request)
     assert user.username == 'john@example.com' 
+
+def test_login_page_loads(client): 
+    response = client.get('/login') 
+
+    assert response.status_code == 200 
