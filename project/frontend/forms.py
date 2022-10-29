@@ -8,4 +8,4 @@ class AccountManagementAccount(forms.ModelForm):
                 
 class AuthenticationForm(forms.Form): 
     username = forms.EmailField(required=True, max_length=100) 
-    password = forms.PasswordInput()
+    password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
