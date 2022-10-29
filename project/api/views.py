@@ -1,8 +1,9 @@
+import traceback
 import datetime 
 import pytz
 
 from ninja import NinjaAPI 
-from ninja.errors import AuthenticationError
+from ninja.errors import AuthenticationError 
 
 from django.contrib.auth import authenticate, login, get_user_model
 from django.conf import settings
@@ -31,3 +32,9 @@ def authentication_error(request, exc):
     return api.create_response(request, {
         "message": "Invalid credentials"
     }, status=401)
+
+@api.exception_handler(Exception) 
+def server_error(request, exc): 
+    return api.create_response(request, {
+        "message": traceback.format_exception(exc) if settings.DEBUG else "Internal server error"  
+    }, status=500)
