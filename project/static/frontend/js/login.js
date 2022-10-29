@@ -31,7 +31,8 @@ $(function () {
         }).done(function () {
             $(this).css("display", "none")
         }).fail(function (error) {
-            console.log(error)
+            const traceback = JSON.parse(error.responseText).message
+            $('#auth-message').text(traceback)
         }).always(function () {
             if (button.prop("disabled")) {
                 button.prop("disabled", false)
