@@ -1,21 +1,22 @@
 import datetime 
 import pytz
-from ninja import NinjaAPI 
-from ninja.security import django_auth
 
-from django.shortcuts import render
-from django.contrib.auth import authenticate, login
+from ninja import NinjaAPI 
+from ninja.errors import AuthenticationError
+
+from django.contrib.auth import authenticate, login, get_user_model
 from django.conf import settings
 
 from .schemas import UserSchema, UserResponseSchema
-from .exceptions import InvalidCredentialsError
 # Create your views here.
 
-api = NinjaAPI(csrf=True)
+api = NinjaAPI(version="1", csrf=True)
 
 
 @api.post('/login', response=UserResponseSchema) 
 def login_user(request, data: UserSchema):
+    if not get_user_model().objects.filter(username=data.username).exists():
+        raise AuthenticationError()
     user = authenticate(request, username=data.username, password=data.password)
     if user is not None: 
         login(request, user)
@@ -23,5 +24,10 @@ def login_user(request, data: UserSchema):
         user.save()
         return user
     else: 
-        raise InvalidCredentialsError() 
+        raise AuthenticationError() 
 
+@api.exception_handler(AuthenticationError)
+def authentication_error(request, exc): 
+    return api.create_response(request, {
+        "message": "Invalid credentials"
+    }, status=401)
