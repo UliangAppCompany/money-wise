@@ -5,6 +5,7 @@ from selenium import webdriver
 
 from django.db import connection 
 from django.test import Client 
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.contrib.auth import get_user_model
 
 from account_management.models import Journal, Ledger
@@ -74,10 +75,17 @@ def client():
     return client_ 
 
 @pytest.fixture 
+def server(): 
+    StaticLiveServerTestCase.setUpClass()
+    yield StaticLiveServerTestCase 
+    StaticLiveServerTestCase.tearDownClass()
+
+@pytest.fixture 
 def driver(): 
     driver_ = webdriver.Chrome()
     yield driver_ 
     driver_.close()
+
 
 @pytest.fixture 
 def user_creates_ledger(ledger): 
