@@ -1,5 +1,6 @@
 import pytest 
 
+from django.test import override_settings
 from selenium.webdriver.common.by import By 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions 
@@ -9,6 +10,7 @@ pytestmark = [
     pytest.mark.usefixtures("register_new_user", "validate_new_user") 
 ]
 
+@override_settings(DEBUG=True)
 def test_user_can_login_at_the_login_page(server, driver):
     driver.get(f"{server.live_server_url}/login")
 
