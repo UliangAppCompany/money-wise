@@ -3,3 +3,6 @@ class DuplicateUserNameError(Exception):
 
 class UnvalidatedUserError(Exception): 
     pass 
+
+class TokenExpiredError(Exception): 
+    pass 

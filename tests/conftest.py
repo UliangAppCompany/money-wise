@@ -14,7 +14,7 @@ from registration.service import create_user
 
 @pytest.fixture 
 def register_new_user(): 
-    create_user('john@example.com', 'abc') 
+    create_user('john@example.com', 'abc')
 
 @pytest.fixture 
 def validate_new_user(): 
