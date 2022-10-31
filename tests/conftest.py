@@ -1,8 +1,12 @@
 from datetime import datetime
+
 import pytest 
+from selenium import webdriver
+
 from django.db import connection 
 from django.test import Client 
-
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.contrib.auth import get_user_model
 
 from account_management.models import Journal, Ledger
 from registration.service import create_user
@@ -12,6 +16,13 @@ from registration.service import create_user
 def register_new_user(): 
     create_user('john@example.com', 'abc')
 
+@pytest.fixture 
+def validate_new_user(): 
+    user = get_user_model().objects.get(username='john@example.com')
+    user.is_validated = True 
+    user.set_password('password') 
+    user.save()
+    
 @pytest.fixture 
 def cursor(): 
     cursor_ = connection.cursor() 
@@ -62,3 +73,22 @@ def create_cash_accounts(ledger):
 def client(): 
     client_ = Client() 
     return client_ 
+
+@pytest.fixture 
+def server(): 
+    StaticLiveServerTestCase.setUpClass()
+    yield StaticLiveServerTestCase 
+    StaticLiveServerTestCase.tearDownClass()
+
+@pytest.fixture 
+def driver(): 
+    driver_ = webdriver.Chrome()
+    yield driver_ 
+    driver_.close()
+
+
+@pytest.fixture 
+def user_creates_ledger(ledger): 
+    user = get_user_model().objects.get(username='john@example.com')
+    user.ledgers.add(ledger)
+    user.save() 

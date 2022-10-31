@@ -109,6 +109,7 @@ class Account(models.Model):
 
     control = models.ForeignKey('self', on_delete=models.CASCADE, related_name="subaccounts", null=True
         ,default=None)
+    is_control = models.BooleanField(default=False)
 
     def __repr__(self) -> str:
         return f"Account({self.number}-{self.description})"
@@ -164,6 +165,8 @@ class Ledger(models.Model):
     description = models.TextField() 
     created_on = models.DateTimeField(auto_now_add=True) 
     updated_on = models.DateTimeField(auto_now=True) 
+    user = models.ForeignKey("registration.User", on_delete=models.CASCADE, related_name='ledgers', 
+    null=True )
 
     @property 
     def chartofaccounts(self): 

@@ -1,0 +1,44 @@
+{% extends 'frontend/base.html' %}
+
+{% block script %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+{% endblock %}
+
+{% block body %}
+ <form id="add-account-form" method="post" action="{% url 'list-accounts' ledger.id %}">
+    {{ add_account_form }}
+    <input type="submit" value="Submit" id="submit-button">
+ </form>
+    <button id="submit-and-continue-button">Submit and continue</button>
+{% endblock %}
+
+{{ post_url|json_script:"post-url" }}
+
+<script>
+    var postUrl = JSON.parse(document.getElementById("post-url").textContent)
+
+    $('#submit-and-continue-button').click(function(event){
+        event.preventDefault()
+        $(this).prop("disabled", true)
+
+        var dataArray = $('#add-account-form').serializeArray()
+        var data =  {}
+        dataArray.forEach(function (elem) {
+            data[elem['name']] = elem['value']
+        })
+        $.post(postUrl, data, function (result) {
+            console.log(result)
+        })
+        .fail( function(error) {
+            console.log(error)
+        })
+        .always(function(result) {
+            button = $('#submit-and-continue-button')
+            if (button.prop('disabled')) {
+                button.prop('disabled', false)
+            }
+        }, "json")
+    })
+</script>
+
+

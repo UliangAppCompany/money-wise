@@ -1,0 +1,21 @@
+{% extends 'frontend/base.html' %}
+
+
+{% block scripts %} {{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js" integrity="sha256-0H3Nuz3aug3afVbUlsu12Puxva3CP4EhJtPExqs54Vg=" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% load static %} 
+
+{% block body %}
+<form method="post" id="login-form">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit" id="login-form-submit-button">
+</form>
+<div id="auth-message"></div>
+
+{{ post_url|json_script:"post-url"}}
+
+<script src="{% static 'frontend/js/login.js' %}"></script>
+{% endblock %}
