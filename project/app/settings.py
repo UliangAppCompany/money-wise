@@ -42,8 +42,8 @@ INSTALLED_APPS = [
     "ninja",
     "account_management.apps.AccountManagementConfig",
     "registration.apps.RegistrationConfig", 
-    "frontend.apps.FrontendConfig",
-    "api.apps.ApiConfig" 
+    "frontend.apps.FrontendConfig", 
+    "api.apps.ApiConfig"
 ]
 
 MIDDLEWARE = [
