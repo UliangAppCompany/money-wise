@@ -1,4 +1,3 @@
-from ast import parse
 import pytest
 
 
@@ -8,8 +7,8 @@ pytestmark = [
         "user_creates_ledger", "login_user")]
 
 @pytest.fixture
-def post_response(client): 
-    response = client.post('/api/ledger/1/account', data={
+def post_response(client, ledger): 
+    response = client.post(f'/api/ledger/{ledger.id}/account', data={
         'number': 100, 
         'name': 'Cash', 
         "description": "Description", 
@@ -27,31 +26,19 @@ def test_add_account_view_returns_ok_status(post_response):
     assert post_response.status_code == 200 
 
 def test_add_account_view_returns_proper_parsed_object(post_response): 
-    parsed_object=post_response.json()
+    parsed_object = post_response.json() 
 
-    created_on = parsed_object.pop('created_on')
-    updated_on = parsed_object.pop('updated_on')
-
-    assert parsed_object == {
-        "id": 1, 
-        'number': 100, 
-        'name': 'Cash', 
-        "description": "Description", 
-        "notes": "Cash on hand.", 
-        "debit_account": True, 
-        "category": "AS", 
-        "ledger": 1, 
-        "is_control": False, 
-        "control": None} 
-
+    assert  { 'id', 'name', 'number', 'description', 'notes', 'is_control', 
+    'category', 'debit_account', 'created_on', 'updated_on', 'ledger', 'control' } ==set(parsed_object.keys())
 
 def test_add_account_view_adds_resource_to_db(post_response, cursor): 
-    result = cursor.execute("select * from account_management_account "
+    cursor.execute("select * from account_management_account "
     " join account_management_ledger on account_management_account.ledger_id = account_management_ledger.id " 
     " where account_management_account.number = 100 "
     " and account_management_ledger.user_id = (select id from registration_user " 
-    " where username = 'john@example.com')").fetchall()
+    " where username = 'john@example.com')")
 
+    result = cursor.fetchall()
     assert len(result) != 0 
     
 

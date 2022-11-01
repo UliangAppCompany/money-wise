@@ -12,17 +12,17 @@ pytestmark = [
 ]
 
 @pytest.fixture 
-def post_response(client): 
+def post_response(client, ledger): 
     client.login(username='john@example.com', password='password')
-    response_ = client.post('/api/ledger/1/account',
+    response_ = client.post(f'/api/ledger/{ledger.id}/account',
         data={'number': 101, 'description': 'Bank A Account', 'debit_account': True },
         content_type='application/json')
     return response_
 
 @pytest.fixture 
-def get_response(client): 
+def get_response(client, ledger): 
     client.login(username='john@example.com', password='password')
-    response = client.get('/ledger/1/account')
+    response = client.get(f'/ledger/{ledger.id}/account')
     return response 
 
 
@@ -36,14 +36,15 @@ def test_template_renders_with_correct_context(get_response):
     assert isinstance(context['ledger'], Ledger)
     assert 'frontend/add_account_page.html' in [template.name for template in get_response.templates]
 
-def test_can_post_to_api_endpoint_and_update_db(post_response, cursor): 
+def test_can_post_to_api_endpoint_and_update_db(post_response, cursor, ledger): 
     assert post_response.status_code == 200
 
-    result = cursor.execute("select number, description, debit_account from " 
+    cursor.execute("select number, description, debit_account from " 
         "account_management_account "
         "where number = 101 and " 
-        "ledger_id = 1").fetchone() 
+        "ledger_id = %s ", [ledger.id]) 
 
+    result = cursor.fetchone()
     assert result == (101, 'Bank A Account', True)  
 
 def test_that_cannot_make_unauthenticated_api_calls(client): 

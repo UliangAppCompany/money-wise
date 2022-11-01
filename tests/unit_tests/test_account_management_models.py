@@ -6,16 +6,16 @@ import pytest
 @pytest.mark.django_db 
 def test_init_journal(cursor, journal): 
 
-    result = cursor.execute("select number, name from account_management_journal") \
-        .fetchall()
+    cursor.execute("select number, name from account_management_journal") 
+    result = cursor.fetchall()
 
     assert result == [(1, 'Company A Journal')]
 
 @pytest.mark.django_db
 def test_init_ledger(cursor, ledger): 
     
-    result = cursor.execute("select number, name from account_management_ledger") \
-        .fetchall() 
+    cursor.execute("select number, name from account_management_ledger") 
+    result=cursor.fetchall() 
 
     assert result == [(1, "Company A General Ledger")] 
 
@@ -23,10 +23,12 @@ def test_init_ledger(cursor, ledger):
 @pytest.mark.usefixtures("add_accounts_to_ledger")
 def test_ledger_create_account(cursor, ledger): 
     
-    result = cursor.execute(
+    cursor.execute(
         "select number, description, debit_account, category " 
         "from account_management_account "
-        "where ledger_id = %s", [ledger.id]).fetchall() 
+        "where ledger_id = %s", [ledger.id])
+    
+    result = cursor.fetchall()
 
     assert len(result) ==3  
     assert set(result) == {
@@ -52,10 +54,11 @@ def test_account_create_balance_entry(cursor, ledger):
         description="being collections from cash register", 
         date=datetime.strptime("2022-10-16 16:00:00", fmt).replace(tzinfo=tz)) 
 
-    result = cursor.execute(
+    cursor.execute(
         "select debit_amount, credit_amount, debit_balance, description " 
         "from account_management_balance "
-        "where account_id = %s", [cash_account.id]).fetchall()
+        "where account_id = %s", [cash_account.id])
+    result = cursor.fetchall()
 
     assert result == [(1050, 0, 1050, "being collections from cash register")]
     
@@ -63,12 +66,13 @@ def test_account_create_balance_entry(cursor, ledger):
         description="being payment of invoice-XXX", 
         date=datetime.strptime("2022-10-17 15:30:00", fmt).replace(tzinfo=tz)) 
 
-    result = cursor.execute(
+    cursor.execute(
         "select debit_amount, credit_amount, debit_balance, description " 
         "from account_management_balance "
-        "where account_id = %s"
-        "order by date desc", [cash_account.id]).fetchall()
+        "where account_id = %s "
+        "order by date desc", [cash_account.id])
 
+    result = cursor.fetchall()
     assert result == [
         (0, 950, 100, "being payment of invoice-XXX"), 
         (1050, 0, 1050, "being collections from cash register")
@@ -77,23 +81,24 @@ def test_account_create_balance_entry(cursor, ledger):
 @pytest.mark.django_db 
 @pytest.mark.usefixtures("add_accounts_to_ledger", "collect_from_cash_register")
 def test_journal_create_double_entry(cursor, journal): 
-    result = cursor.execute("select notes from account_management_entry " 
+    cursor.execute("select notes from account_management_entry " 
             "where journal_id = %s", 
-            [journal.id]).fetchall() 
-
+            [journal.id])
+    result = cursor.fetchall() 
     assert result == [('being collections from cash register', )] 
 
 @pytest.mark.django_db 
 @pytest.mark.usefixtures("add_accounts_to_ledger", "collect_from_cash_register")
 def test_that_transaction_database_is_updated_with_double_entry(cursor, journal):
-    result = cursor.execute("select number, debit_amount, credit_amount, account_management_transaction.description "
+    cursor.execute("select number, debit_amount, credit_amount, account_management_transaction.description "
             "from account_management_account, account_management_transaction "
             "where account_management_account.id = account_id " 
             "and entry_id in " 
             "(select id from account_management_entry "
             "where journal_id = %s) " 
             "order by number ", 
-            [journal.id]).fetchall()
+            [journal.id])
+    result = cursor.fetchall()
 
     assert result == [
             (100, 1050, 0, "to 100-Cash account"), 
@@ -107,12 +112,13 @@ def test_that_transaction_database_is_updated_with_double_entry(cursor, journal)
     (300, ("being collections from cash register", 0, 1050, 0, 1050))
     ] )
 def test_that_account_balance_is_updated_after_journal_entry(account_num, expected, cursor, ledger): 
-    result = cursor.execute("select account_management_balance.description, debit_amount, credit_amount, debit_balance, credit_balance " 
+    cursor.execute("select account_management_balance.description, debit_amount, credit_amount, debit_balance, credit_balance " 
             "from account_management_balance "
             "join account_management_account "
             "on account_id = account_management_account.id "
             "where number = %s "
-            "and ledger_id = %s ", [account_num, ledger.id] ).fetchall()
+            "and ledger_id = %s ", [account_num, ledger.id] )
+    result = cursor.fetchall()
 
     assert result == [expected]
 
@@ -125,9 +131,10 @@ def test_that_accounts_can_be_associated_with_a_control_account(cursor, ledger):
     
     control_account.add_subaccounts(bank_account1, bank_account2)
 
-    result = cursor.execute("select number, description from account_management_account "
-            "where control_id = %s ", [control_account.id]).fetchall()
+    cursor.execute("select number, description from account_management_account "
+            "where control_id = %s ", [control_account.id])
 
+    result = cursor.fetchall()
     assert result == [(101, "Cash in Bank 1" ), (102, "Cash in Bank 2")]
 
 @pytest.mark.django_db 
@@ -137,11 +144,12 @@ def test_that_can_add_a_control_account_to_an_account(cursor, ledger):
     account.categorize(number=100) 
 
 
-    result = cursor.execute("select number, description from "
+    cursor.execute("select number, description from "
     "account_management_account "
     "where control_id = ( " 
     " select id from account_management_account " 
     " where number=100 and ledger_id = %s)", 
-    [ledger.id]).fetchall() 
+    [ledger.id]) 
 
+    result = cursor.fetchall()
     assert result == [(101, "Cash in Bank 1")]

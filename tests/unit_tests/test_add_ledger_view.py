@@ -21,23 +21,17 @@ def test_that_can_add_ledger_to_user(post_response):
     assert post_response.status_code == 200 
 
 def test_that_ledger_is_added_to_database(post_response, cursor): 
-    result = cursor.execute("select * from account_management_ledger where user_id = ( " 
-        " select id from registration_user where username='john@example.com') ").fetchall()
+    cursor.execute("select * from account_management_ledger where user_id = ( " 
+        " select id from registration_user where username='john@example.com') ")
 
+    result = cursor.fetchall()
     assert len(result) != 0
 
 
 def test_that_response_returns_json(post_response): 
     parsed_object = post_response.json()
-    created_on = parsed_object.pop('created_on') 
-    updated_on = parsed_object.pop('updated_on') 
 
-    assert post_response.json() == {
-        'id': 1, 
-        'number': 1, 
-        'name': 'Company A General Ledger', 
-        'description': 'Description'
-    }
+    assert ['id', 'number', 'name', 'description', 'created_on', 'updated_on'] == list(parsed_object.keys())
 
 def test_that_unauthenticated_user_cannot_post_to_endpoint(client): 
     client.logout()

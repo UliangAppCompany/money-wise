@@ -6,7 +6,7 @@ from django.core import mail
 from django.contrib.auth import get_user_model 
 from django.test import override_settings
 
-from registration.exceptions import DuplicateUserNameError, UnvalidatedUserError
+from registration.exceptions import DuplicateUserNameError, TokenExpiredError, UnvalidatedUserError
 from registration.service import create_user 
 
 
@@ -14,7 +14,8 @@ from registration.service import create_user
 @pytest.mark.django_db
 @pytest.mark.usefixtures("register_new_user")
 def test_create_new_user_service_creates_new_user_if_not_present(cursor): 
-    result = cursor.execute("select username from registration_user ").fetchone() 
+    cursor.execute("select username from registration_user ") 
+    result = cursor.fetchone()
     assert result == ('john@example.com', )  
 
 @pytest.mark.django_db 
@@ -73,7 +74,8 @@ def test_that_unvalidated_user_cannot_set_password():
 )
 def test_that_user_cannot_be_validated_if_validation_link_has_expired(client): 
     time.sleep(0.6) 
-    response =client.get('/registration/validate?username=john@example.com&token=abc')
+    with pytest.raises(TokenExpiredError):
+        response = client.get('/registration/validate?username=john@example.com&token=abc')
     
     user = get_user_model().objects.get(username='john@example.com')
     assert user.is_validated==False
