@@ -8,6 +8,7 @@ django = "*"
 project-applications = {editable = true, path = "."}
 django-ninja = "*"
 pytz = "*"
+python-dateutil = "*"
 
 [dev-packages]
 pytest = "*"

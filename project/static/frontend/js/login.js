@@ -1,25 +1,41 @@
 
 $(function () {
-    var form = $('#login-form')
     var data = {}
     var postUrl = JSON.parse($('#post-url').text())
+    var button = $('#login-form-submit-button')
 
-    $('#login-form-submit-button').on("submit", function (event) {
+    const csrftoken = Cookies.get('csrftoken')
+
+    $.ajaxSetup({
+        contentType: "application/json", 
+        headers: {
+            "X-CSRFToken": csrftoken 
+        }
+    })
+
+    $('#login-form').on("submit", function (event) {
         event.preventDefault()
-        $(this).prop("disable", true)
-
-        form.serializeArray()
+        button.prop("disabled", true)
+        
+        $(this).serializeArray()
             .forEach(function (item) {
-                data[item['name'] = item['value']]
+                data[item['name']] = item['value']
             })
+        // console.log(data, postUrl)
+        var payload = JSON.stringify(data)
 
-        $.post(postUrl, data, function (result) {
+        $.post(postUrl, payload, function (result) {
             console.log(result)
+        }).done(function() {
+            $('#auth-message').text("Authenticated!")
+        }).done(function () {
+            $(this).css("display", "none")
         }).fail(function (error) {
-            console.log(error)
-        }).always(function (result) {
-            if ($(this).prop("disable")) {
-                $(this).prop("disable", false)
+            const traceback = JSON.parse(error.responseText).message
+            $('#auth-message').text(traceback)
+        }).always(function () {
+            if (button.prop("disabled")) {
+                button.prop("disabled", false)
             }
         })
 

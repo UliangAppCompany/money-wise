@@ -5,13 +5,14 @@ from django.contrib.auth import get_user_model
 
 # Create your views here.
 
-def validate_registration(request, user_id): 
+def validate_registration(request): 
     token = request.GET['token'] 
-    user = get_user_model().objects.get(id=user_id) 
+    username = request.GET['username']
+    user = get_user_model().objects.get(username=username) 
+    # breakpoint()
     if user.token_is_valid(token): 
         user.is_validated = True
-    # breakpoint()
-    user.save() 
+        user.save() 
 
     return HttpResponseRedirect(reverse('set-new-password')) 
 
