@@ -93,7 +93,9 @@ class Account(models.Model):
 
     ledger = models.ForeignKey("Ledger", on_delete=models.CASCADE, related_name="accounts", null=True)
     number = models.IntegerField()
+    name = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True) 
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True) 
     debit_account = models.BooleanField(default=True)

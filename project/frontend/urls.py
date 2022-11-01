@@ -4,6 +4,7 @@ from frontend import views
 
 
 urlpatterns = [
-    path('user/<int:user_id>/account', views.account_management, name='account-management'), 
+    path('ledger/<int:ledger_id>/account', views.add_account, name='add-account'), 
+    path('ledger/<int:ledger_id>', views.ledger_page, name='ledger-page'), 
     path('login', views.login_page, name="login-page")
 ]

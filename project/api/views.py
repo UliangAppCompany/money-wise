@@ -9,8 +9,9 @@ from ninja.security import django_auth
 from django.contrib.auth import authenticate, login, get_user_model, get_user
 from django.conf import settings
 
-from account_management.models import Ledger
+from account_management.models import Ledger, Account
 
+from .schemas import AccountSchema, AccountResponseSchema
 from .schemas import UserSchema, UserResponseSchema
 from .schemas import LedgerSchema, LedgerResponseSchema
 # Create your views here.
@@ -25,7 +26,14 @@ def add_ledger(request, data: LedgerSchema):
     user.save()
     return ledger
 
-
+@api.post("/ledger/{ledger_id}/account", response = AccountResponseSchema,  
+     auth=django_auth)
+def add_account(request, ledger_id:int, data:AccountSchema): 
+    ledger = Ledger.objects.get(id=ledger_id) 
+    account = Account.objects.create(ledger=ledger, **dict(data))
+    ledger.save()
+    return account
+    
 @api.post('/login', response=UserResponseSchema) 
 def login_user(request, data: UserSchema):
     if not get_user_model().objects.filter(username=data.username).exists():
