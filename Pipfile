@@ -9,6 +9,7 @@ project-applications = {editable = true, path = "."}
 django-ninja = "*"
 pytz = "*"
 python-dateutil = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 pytest = "*"
