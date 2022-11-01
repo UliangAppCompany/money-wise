@@ -26,13 +26,13 @@ def add_ledger(request, data: LedgerSchema):
     user.save()
     return ledger
 
-@api.post("/ledger/{ledger_id}/account", response = {
-    200: AccountResponseSchema }, auth=django_auth)
-def add_new_account(request, ledger_id:int, data:AccountSchema): 
+@api.post("/ledger/{ledger_id}/account", response = AccountResponseSchema,  
+     auth=django_auth)
+def add_account(request, ledger_id:int, data:AccountSchema): 
     ledger = Ledger.objects.get(id=ledger_id) 
-    account = Account.objects.create(ledger=ledger, **data.dict())
+    account = Account.objects.create(ledger=ledger, **dict(data))
     ledger.save()
-    return 200, account
+    return account
     
 @api.post('/login', response=UserResponseSchema) 
 def login_user(request, data: UserSchema):
