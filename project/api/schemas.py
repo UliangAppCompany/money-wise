@@ -2,9 +2,7 @@ from ninja import ModelSchema, Schema
 
 from django.contrib.auth import get_user_model
 
-from account_management.models import Account 
-
-from account_management.models import Ledger
+from account_management.models import Account,Ledger
 
 
 class UserSchema(Schema): 
@@ -31,11 +29,10 @@ class LedgerResponseSchema(ModelSchema):
 class AccountSchema(ModelSchema): 
     class Config:
         model = Account 
-        model_fields = ['number', 'name', 'description', 'notes', 'debit_account']
+        model_exclude = ['control', 'id', 'ledger', 'created_on', 'updated_on']
 
 class AccountResponseSchema(ModelSchema): 
     class Config:
         model = Account 
-        model_fields = ['id', 'number', 'name', 'description', 'notes', 
-                        'debit_account']
+        model_fields = '__all__'
 
