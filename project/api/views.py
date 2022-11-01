@@ -4,14 +4,26 @@ import pytz
 
 from ninja import NinjaAPI 
 from ninja.errors import AuthenticationError 
+from ninja.security import django_auth
 
-from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth import authenticate, login, get_user_model, get_user
 from django.conf import settings
 
+from account_management.models import Ledger
+
 from .schemas import UserSchema, UserResponseSchema
+from .schemas import LedgerSchema, LedgerResponseSchema
 # Create your views here.
 
 api = NinjaAPI(version="1", csrf=True)
+
+@api.post('/ledger', auth=django_auth, response=LedgerResponseSchema) 
+def add_ledger(request, data: LedgerSchema): 
+    user = get_user(request) 
+    ledger = Ledger.objects.create(**dict(data))
+    user.ledgers.add(ledger)
+    user.save()
+    return ledger
 
 
 @api.post('/login', response=UserResponseSchema) 
