@@ -92,3 +92,7 @@ def user_creates_ledger(ledger):
     user = get_user_model().objects.get(username='john@example.com')
     user.ledgers.add(ledger)
     user.save() 
+
+@pytest.fixture 
+def login_user(client):
+    client.login(username="john@example.com", password="password")

@@ -9,10 +9,6 @@ pytestmark = [
         "login_user")]
 
 
-@pytest.fixture 
-def login_user(client):
-    client.login(username="john@example.com", password="password")
-
 @pytest.fixture
 def post_response(client): 
     response = client.post('/api/ledger', data={'number': 1, 'name': 'Company A General Ledger', 
