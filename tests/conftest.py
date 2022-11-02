@@ -77,19 +77,6 @@ def client():
     return client_ 
 
 @pytest.fixture 
-def server(): 
-    StaticLiveServerTestCase.setUpClass()
-    yield StaticLiveServerTestCase 
-    StaticLiveServerTestCase.tearDownClass()
-
-@pytest.fixture 
-def driver(): 
-    driver_ = webdriver.Chrome()
-    yield driver_ 
-    driver_.close()
-
-
-@pytest.fixture 
 def user_creates_ledger(ledger): 
     user = get_user_model().objects.get(username='john@example.com')
     user.ledgers.add(ledger)

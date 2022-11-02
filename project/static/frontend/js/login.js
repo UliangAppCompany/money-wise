@@ -29,10 +29,12 @@ $(function () {
         }).done(function() {
             $('#auth-message').text("Authenticated!")
         }).done(function () {
-            $(this).css("display", "none")
+            // $(this).css("display", "none")
         }).fail(function (error) {
-            const traceback = JSON.parse(error.responseText).message
-            $('#auth-message').text(traceback)
+            const {tb, message} = JSON.parse(error.responseText)
+            $('#auth-message').html(
+                `<p>${message}</p><p>${tb}</p>`
+            )
         }).always(function () {
             if (button.prop("disabled")) {
                 button.prop("disabled", false)

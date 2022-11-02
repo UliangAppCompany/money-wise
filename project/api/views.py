@@ -18,6 +18,14 @@ from .schemas import LedgerSchema, LedgerResponseSchema
 
 api = NinjaAPI(version="1", csrf=True)
 
+class ApiAuthError(AuthenticationError): 
+    def __init__(self, message, *args, **kwargs): 
+        super().__init__(*args, **kwargs)
+        self.message = message
+
+    def __str__(self): 
+        return self.message
+
 @api.post('/ledger', auth=django_auth, response=LedgerResponseSchema) 
 def add_ledger(request, data: LedgerSchema): 
     user = get_user(request) 
@@ -37,7 +45,7 @@ def add_account(request, ledger_id:int, data:AccountSchema):
 @api.post('/login', response=UserResponseSchema) 
 def login_user(request, data: UserSchema):
     if not get_user_model().objects.filter(username=data.username).exists():
-        raise AuthenticationError()
+        raise ApiAuthError(f"User with username {data.username} not found")
     user = authenticate(request, username=data.username, password=data.password)
     if user is not None: 
         login(request, user)
@@ -45,16 +53,18 @@ def login_user(request, data: UserSchema):
         user.save()
         return user
     else: 
-        raise AuthenticationError() 
+        raise ApiAuthError("Invalid credentials.") 
 
 @api.exception_handler(AuthenticationError)
 def authentication_error(request, exc): 
     return api.create_response(request, {
-        "message": "Invalid credentials"
+        "message": str(exc),  
+        "tb": traceback.format_exception(exc) if settings.DEBUG else ""
     }, status=401)
 
 @api.exception_handler(Exception) 
 def server_error(request, exc): 
     return api.create_response(request, {
-        "message": traceback.format_exception(exc) if settings.DEBUG else "Internal server error"  
+        "message": str(exc), 
+        "tb": traceback.format_exception(exc) if settings.DEBUG else ""  
     }, status=500)
