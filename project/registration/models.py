@@ -65,8 +65,8 @@ class User(PermissionsMixin, AbstractBaseUser):
             self.save() 
             return self.validation_token
     
-    def set_password(self, password): 
-        if not self.is_validated: 
+    def set_password(self, password, require_validation=True): 
+        if not self.is_validated and require_validation: 
 
             raise UnvalidatedUserError("Password cannot be set on unvalidated users.") 
         super().set_password(password)
