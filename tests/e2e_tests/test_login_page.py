@@ -1,31 +1,44 @@
 import pytest 
 
 from django.test import  override_settings
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+
+from selenium import webdriver
 from selenium.webdriver.common.by import By 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions 
 
-pytestmark = [
-    pytest.mark.django_db, 
-    pytest.mark.usefixtures("register_new_user", "validate_new_user") 
-]
+from registration.service import create_user
 
+# pytestmark = [
+#     pytest.mark.django_db, 
+#     pytest.mark.usefixtures("register_new_user", "validate_new_user") 
+# ]
 
+@pytest.mark.django_db
 @override_settings(DEBUG=True)
-def test_user_can_login_at_the_login_page(server, driver):
-    driver.get(f"{server.live_server_url}/login")
+class TestLoginPage(StaticLiveServerTestCase): 
 
-    username_input = driver.find_element(By.NAME, "username")
-    username_input.send_keys("john@example.com")
+    @classmethod 
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.driver = webdriver.Chrome() 
+        cls.user = create_user('joe@example.com' ) 
+        cls.user.set_password('password', require_validation=False)
+        cls.user.save()
 
-    password_input = driver.find_element(By.NAME, "password") 
-    password_input.send_keys("password") 
+    @classmethod 
+    def tearDownClass(cls): 
+        cls.driver.quit()
+        super().tearDownClass()
 
-    submit_button = driver.find_element(By.ID, "login-form-submit-button")
-    submit_button.click()
+    def test_login(self): 
+        self.driver.get(self.live_server_url + '/login') 
 
-    elem = WebDriverWait(driver, 30).until(expected_conditions
-        .text_to_be_present_in_element((By.ID, "auth-message"), "Authenticated!"))
+        self.driver.find_element(By.NAME, 'username').send_keys('joe@example.com')
+        self.driver.find_element(By.NAME, 'password').send_keys('password') 
+        self.driver.find_element(By.ID, 'login-form-submit-button').click()
 
-    assert elem is not None
-
+        self.assertIsNotNone(WebDriverWait(self.driver, 10).until(
+            expected_conditions.text_to_be_present_in_element((By.ID, 'auth-message'), 'Authenticated!')
+        ))
