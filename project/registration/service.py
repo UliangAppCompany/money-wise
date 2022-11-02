@@ -3,13 +3,13 @@ from django.db.utils import IntegrityError
 from registration.exceptions import DuplicateUserNameError  
 
 
-def create_user(username, token=None): 
+def create_user(username, token=None, **save_kwargs): 
     User = get_user_model() 
     try: 
         user = User(username=username)
         if token: 
             user.validation_token = token
-        user.save()
+        user.save(**save_kwargs)
     except IntegrityError: 
         raise DuplicateUserNameError(f"User {username} already registered.")
     return user
