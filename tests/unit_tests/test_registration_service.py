@@ -25,8 +25,7 @@ def test_that_new_user_cannot_be_created_if_already_present():
     
         assert str(exc) == "User john@example.com already registered."
 
-@pytest.mark.django_db 
-@pytest.mark.usefixtures("register_new_user")
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 def test_that_validation_email_is_sent_when_new_user_is_successfully_saved_in_db(): 
     assert len(mail.outbox) == 1    
     message = mail.outbox[0] 
@@ -36,8 +35,7 @@ def test_that_validation_email_is_sent_when_new_user_is_successfully_saved_in_db
     assert message.to == ["john@example.com"]
     assert 'registration/validate?username=john@example.com&token=abc' in message.body 
 
-@pytest.mark.django_db 
-@pytest.mark.usefixtures("register_new_user") 
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 def test_that_email_is_not_sent_when_user_info_is_updated(): 
     mail.outbox = [] 
 
@@ -73,8 +71,7 @@ def test_that_user_cannot_be_validated_if_validation_link_has_expired(client):
     user = get_user_model().objects.get(username='john@example.com')
     assert user.is_validated==False
     
-@pytest.mark.django_db
-@pytest.mark.usefixtures("register_new_user") 
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 def test_send_message_callback_sends_message_with_urlsafe_token_if_none_supplied(): 
     validation_token = get_user_model().objects.get(username='john@example.com').validation_token 
     body = mail.outbox[0].body 
