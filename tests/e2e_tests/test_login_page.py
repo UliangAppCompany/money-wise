@@ -2,6 +2,7 @@ import pytest
 
 from django.test import  override_settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.conf import settings
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By 
@@ -22,7 +23,7 @@ class TestLoginPage(StaticLiveServerTestCase):
     @classmethod 
     def setUpClass(cls) -> None:
         super().setUpClass()
-        cls.driver = webdriver.Chrome() 
+        cls.driver = webdriver.Chrome(settings.CHROMEDRIVER_PATH) 
         cls.user = create_user('joe@example.com' ) 
         cls.user.set_password('password', require_validation=False)
         cls.user.save()
