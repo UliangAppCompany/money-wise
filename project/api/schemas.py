@@ -9,6 +9,9 @@ class UserSchema(Schema):
     username: str 
     password: str
 
+class UserSetPasswordSchema(Schema): 
+    password: str 
+    retype_password:str
 
 class UserResponseSchema(ModelSchema): 
     class Config: 
