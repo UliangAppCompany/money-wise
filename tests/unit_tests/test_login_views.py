@@ -18,7 +18,7 @@ def login_response(client):
     return response
 
 
-def test_login_route(login_response, client): 
+def test_login_api_enpoint_authenticates_user(login_response, client): 
     assert login_response.status_code == 200 
 
     factory = RequestFactory() 
