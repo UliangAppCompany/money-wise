@@ -144,6 +144,6 @@ NINJA_DOCS_VIEW = "redoc"
 
 
 DEFAULT_FROM_EMAIL = "admin@money-wise.com.my"
-EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.dummy.EmailBackend')
 VALIDATION_TOKEN_EXPIRY = timedelta(hours=36)
 HOSTNAME = 'http://localhost:8080'
