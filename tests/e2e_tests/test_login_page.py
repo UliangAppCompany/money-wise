@@ -23,7 +23,10 @@ class TestLoginPage(StaticLiveServerTestCase):
     @classmethod 
     def setUpClass(cls) -> None:
         super().setUpClass()
-        cls.driver = webdriver.Chrome(settings.CHROMEDRIVER_PATH) 
+        if (path:=settings.CHROMEDRIVER_PATH): 
+            cls.driver = webdriver.Chrome(path)
+        else: 
+            cls.driver = webdriver.Chrome()
         cls.user = create_user('joe@example.com' ) 
         cls.user.set_password('password', require_validation=False)
         cls.user.save()
