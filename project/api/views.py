@@ -1,3 +1,4 @@
+import secrets
 import traceback
 import datetime 
 import pytz
@@ -8,11 +9,12 @@ from ninja.security import django_auth
 
 from django.contrib.auth import authenticate, login, get_user_model, get_user
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 from account_management.models import Ledger, Account
 
 from .schemas import AccountSchema, AccountResponseSchema
-from .schemas import UserSchema, UserResponseSchema
+from .schemas import UserSchema, UserResponseSchema, UserSetPasswordSchema
 from .schemas import LedgerSchema, LedgerResponseSchema
 # Create your views here.
 
@@ -25,6 +27,17 @@ class ApiAuthError(AuthenticationError):
 
     def __str__(self): 
         return self.message
+
+@api.patch('/user/{user_id}', response=UserResponseSchema)
+def patch_user(request, user_id:int, data:UserSetPasswordSchema):
+    if not secrets.compare_digest(data.password, data.retype_password): 
+        raise ApiAuthError("Password does not match")
+    user = get_object_or_404(get_user_model(), id=user_id) 
+    if not user.is_validated: 
+        raise ApiAuthError("User is not validated") 
+    user.set_password(data.password) 
+    user.save() 
+    return user
 
 @api.post('/ledger', auth=django_auth, response=LedgerResponseSchema) 
 def add_ledger(request, data: LedgerSchema): 
