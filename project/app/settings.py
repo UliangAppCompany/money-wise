@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -147,3 +148,4 @@ DEFAULT_FROM_EMAIL = "admin@money-wise.com.my"
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 VALIDATION_TOKEN_EXPIRY = timedelta(hours=36)
 HOSTNAME = 'http://localhost:8080'
+CHROMEDRIVER_PATH = os.environ.get('CHROMEDRIVER_PATH', None) 
