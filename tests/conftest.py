@@ -2,11 +2,9 @@ import os
 from datetime import datetime
 
 import pytest 
-from selenium import webdriver
 
 from django.db import connection 
 from django.test import Client 
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.contrib.auth import get_user_model
 
 from account_management.models import Journal, Ledger
