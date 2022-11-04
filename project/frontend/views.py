@@ -34,8 +34,8 @@ def login_page(request):
         'post_url': login_api_endpoint
     })
 
-def change_password_page(request, user_id): 
+def set_password_page(request, user_id): 
     return render(request, 'frontend/set_password_page.html', context={
         'form': ChangePasswordForm(), 
-        'post_url': reverse('api-1:patch_user', args=[user_id]), 
+        'url': reverse('api-1:patch_user', args=[user_id]), 
     })
