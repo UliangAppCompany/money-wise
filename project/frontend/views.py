@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from account_management.models import Ledger 
 
-from .forms import AccountManagementAddAccountForm, AuthenticationForm
+from .forms import AccountManagementAddAccountForm, AuthenticationForm, ChangePasswordForm
 
 # Create your views here.
 def add_account(request, ledger_id): 
@@ -32,4 +32,10 @@ def login_page(request):
     return render(request, 'frontend/login_page.html', context={
         'form': form, 
         'post_url': login_api_endpoint
+    })
+
+def set_password_page(request, user_id): 
+    return render(request, 'frontend/set_password_page.html', context={
+        'form': ChangePasswordForm(), 
+        'url': reverse('api-1:patch_user', args=[user_id]), 
     })

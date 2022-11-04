@@ -11,12 +11,7 @@ from selenium.webdriver.support import expected_conditions
 
 from registration.service import create_user
 
-# pytestmark = [
-#     pytest.mark.django_db, 
-#     pytest.mark.usefixtures("register_new_user", "validate_new_user") 
-# ]
-
-@pytest.mark.django_db
+@pytest.mark.django_db 
 @override_settings(DEBUG=True)
 class TestLoginPage(StaticLiveServerTestCase): 
 
@@ -46,3 +41,38 @@ class TestLoginPage(StaticLiveServerTestCase):
         self.assertIsNotNone(WebDriverWait(self.driver, 10).until(
             expected_conditions.text_to_be_present_in_element((By.ID, 'auth-message'), 'Authenticated!')
         ))
+
+@pytest.mark.django_db 
+@override_settings(DEBUG=True)
+class TestSetPasswordPage(StaticLiveServerTestCase): 
+
+    @classmethod 
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        if (path:=settings.CHROMEDRIVER_PATH): 
+            cls.driver = webdriver.Chrome(path)
+        else: 
+            cls.driver = webdriver.Chrome()
+        cls.user = create_user('joe@example.com' ) 
+        cls.user.is_validated = True
+        cls.user.save()
+
+    @classmethod 
+    def tearDownClass(cls): 
+        cls.driver.quit()
+        super().tearDownClass()
+
+    def test_change_password(self): 
+        self.driver.get(f'{self.live_server_url}/user/{self.user.id}/set-password')
+        self.driver.find_element(By.NAME, 'password').send_keys('password')
+        self.driver.find_element(By.NAME, 'retype_password').send_keys('password')
+
+        self.driver.find_element(By.ID, 'submit-password-button').click() 
+
+        elem = WebDriverWait(self.driver, 60).until(
+            expected_conditions.text_to_be_present_in_element((By.ID, 'message-box'), 'Changed password!')
+        )
+
+        self.assertIsNotNone(elem)
+
+    
