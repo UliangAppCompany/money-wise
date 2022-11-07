@@ -14,7 +14,7 @@ def add_account(request, ledger_id):
     add_account_url = reverse("api-1:add_account", kwargs={'ledger_id': 
         ledger_id})
     ledger_page = reverse("ledger-page", args=[ledger_id])
-    return render(request, 'frontend/add_account_page.html',
+    return render(request, 'account_management/add_account_page.html',
        context={
             'form': add_account_form, 
             'ledger':ledger,  
@@ -29,13 +29,13 @@ def ledger_page(request, ledger_id):
 def login_page(request): 
     form = AuthenticationForm()
     login_api_endpoint = reverse('api-1:login_user')
-    return render(request, 'frontend/login_page.html', context={
+    return render(request, 'auth/login_page.html', context={
         'form': form, 
         'post_url': login_api_endpoint
     })
 
 def set_password_page(request, user_id): 
-    return render(request, 'frontend/set_password_page.html', context={
+    return render(request, 'registration/set_password_page.html', context={
         'form': ChangePasswordForm(), 
         'url': reverse('api-1:patch_user', args=[user_id]), 
     })
