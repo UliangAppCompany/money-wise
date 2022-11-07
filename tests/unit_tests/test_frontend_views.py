@@ -34,7 +34,7 @@ def test_template_renders_with_correct_context(get_response):
 
     assert isinstance(context['form'], AccountManagementAddAccountForm)  
     assert isinstance(context['ledger'], Ledger)
-    assert 'frontend/add_account_page.html' in [template.name for template in get_response.templates]
+    assert 'account_management/add_account_page.html' in [template.name for template in get_response.templates]
 
 def test_can_post_to_api_endpoint_and_update_db(post_response, cursor, ledger): 
     assert post_response.status_code == 200
