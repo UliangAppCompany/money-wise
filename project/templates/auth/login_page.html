@@ -1,21 +1,29 @@
 {% extends 'base.html' %}
-
-
-{% block scripts %} {{ block.super }}
-{% endblock %}
-
 {% load static %} 
 
+{% block scripts %} {{ block.super }}
+    <script src="{% static 'js/services/httpService.js' %}"></script>
+    <script src="{% static 'js/components/Display.js' %}"></script>
+{% endblock %}
+
 {% block body %}
-<form onsubmit="loginService.send" action="{{ post_url }}" method="post" id="login-form">
+<form onsubmit="loginService.send(event)"  action="{{ post_url }}" method="post" id="login-form">
     {% csrf_token %}
     {{ form }}
     <input type="submit" value="Submit" id="login-form-submit-button">
 </form>
 <div id="auth-message"></div>
 
-<script src="{% static 'js/httpService.js' %}"></script>
 <script>
-    let loginService = new httpService()
+    let authMessageDisplay = new Display({displayElem: $('#auth-message')})
+    let loginService = new httpService({
+        successHandlers: [
+            (response, status) => {
+                if (status === 'success') {
+                    authMessageDisplay.flash('<p>Authenticated!</p>')
+                }
+            } 
+        ]
+    })
 </script>
 {% endblock %}
