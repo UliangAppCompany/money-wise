@@ -29,7 +29,7 @@ class httpService {
             ...ajaxSettings
         });
 
-        this.submit.bind(this);
+        this.send = this.send.bind(this);
         this._data = {};
         this.formElem = formElem; 
     }
