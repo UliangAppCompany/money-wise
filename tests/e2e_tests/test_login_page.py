@@ -2,6 +2,7 @@ import pytest
 
 from django.test import  override_settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.contrib.auth import get_user_model
 from django.conf import settings
 
 from selenium import webdriver
@@ -53,6 +54,8 @@ class TestSetPasswordPage(StaticLiveServerTestCase):
             cls.driver = webdriver.Chrome(path)
         else: 
             cls.driver = webdriver.Chrome()
+        User = get_user_model()
+        User.objects.all().delete()
         cls.user = create_user('joe@example.com' ) 
         cls.user.is_validated = True
         cls.user.save()
