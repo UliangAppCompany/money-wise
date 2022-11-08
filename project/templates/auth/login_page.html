@@ -7,14 +7,28 @@
 {% load static %} 
 
 {% block body %}
-<form method="post" id="login-form">
+<form onsubmit="service.submit" action="{{ post_url }}" method="post" id="login-form">
     {% csrf_token %}
     {{ form }}
     <input type="submit" value="Submit" id="login-form-submit-button">
 </form>
 <div id="auth-message"></div>
 
-{{ post_url|json_script:"post-url"}}
 
-<script src="{% static 'frontend/js/login.js' %}"></script>
+<script type='module' src="{% static 'js/ajaxService.js' %}"></script>
+<script>
+    let submitButton =$('#login-form-submit-button');  
+    let service = new ajaxService({
+        beforeSubmit: function() {
+            submitButton.on('click', function() {
+                $(this).prop('disabled', true)
+            })
+        }, 
+        afterSubmit: function() {
+            if (submitButton.prop('disabled')) {
+                submitButton.prop('disabled', false)
+            } 
+        }
+    })
+</script>
 {% endblock %}
