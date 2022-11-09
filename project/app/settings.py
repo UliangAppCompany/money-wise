@@ -149,3 +149,5 @@ EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.dummy
 VALIDATION_TOKEN_EXPIRY = timedelta(hours=36)
 HOSTNAME = 'http://localhost:8080'
 CHROMEDRIVER_PATH = os.environ.get('CHROMEDRIVER_PATH', None) 
+
+API_PATH = BASE_DIR / 'api' / 'endpoints' 
