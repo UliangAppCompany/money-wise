@@ -19,3 +19,9 @@ def create_user(username, token=None, password=None, is_validated=False, require
     user.save()
     return user
 
+def validate_user(user:User) -> User : 
+    if not user.is_validated:
+        user.is_validated= True
+        user.save()
+    return user 
+
