@@ -168,7 +168,7 @@ class Ledger(models.Model):
     created_on = models.DateTimeField(auto_now_add=True) 
     updated_on = models.DateTimeField(auto_now=True) 
     user = models.ForeignKey("registration.User", on_delete=models.CASCADE, related_name='ledgers', 
-    null=True )
+        null=True )
 
     @property 
     def chartofaccounts(self): 
@@ -180,7 +180,7 @@ class Ledger(models.Model):
     def create_account(self, number, description, category,debit_account=True,  
                         created_on=None): 
         params = {'number': number, 'description': description, 'debit_account': debit_account, 
-        'category': category}  
+            'category': category}  
         params |= {'created_on': created_on} if created_on else {} 
 
         account = Account.objects.create(**params)
