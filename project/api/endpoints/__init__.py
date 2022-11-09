@@ -29,7 +29,7 @@ def init_api_app(api_app):
         module = pathlib.Path(module) 
         if not module.suffix.endswith('py') or module.stem.startswith('__init__'):  
             continue
-        router_module = import_module(f'.{module.stem}') 
+        router_module = import_module(f'api.endpoints.{module.stem}') 
         api_app.add_router(f"/{module.stem}", router_module.router)
 
     return api_app
