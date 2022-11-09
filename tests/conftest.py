@@ -1,11 +1,11 @@
 import os 
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 
 import pytest 
 
 from django.db import connection 
 from django.test import Client 
-from django.contrib.auth import get_user_model
 
 from account_management.models import Journal, Ledger
 from registration.service import create_user
@@ -13,35 +13,23 @@ from registration.service import create_user
 os.environ["NINJA_SKIP_REGISTRY"] = "yes"
 
 @pytest.fixture 
-def register_new_user(): 
-    create_user('john@example.com', 'abc')
+def john(): 
+    user = create_user('john@example.com')
+    return user
 
-@pytest.fixture 
-def validate_new_user(): 
-    user = get_user_model().objects.get(username='john@example.com')
-    user.is_validated = True 
-    user.set_password('password') 
-    user.save()
-    
 @pytest.fixture 
 def cursor(): 
     cursor_ = connection.cursor() 
     yield cursor_ 
     cursor_.close()
 
-
 @pytest.fixture 
 def journal(): 
-    journal_ = Journal(number=1, name="Company A Journal") 
-    journal_.save()
-    return journal_
+    return Journal.objects.create(number=1, name="Company A Journal") 
 
 @pytest.fixture 
 def ledger(): 
-    ledger_ = Ledger(number=1, name="Company A General Ledger")  
-    ledger_.save() 
-
-    return ledger_ 
+    return Ledger.objects.create(number=1, name="Company A General Ledger")  
 
 @pytest.fixture 
 def add_accounts_to_ledger(ledger): 
@@ -75,10 +63,9 @@ def client():
     return client_ 
 
 @pytest.fixture 
-def user_creates_ledger(ledger): 
-    user = get_user_model().objects.get(username='john@example.com')
-    user.ledgers.add(ledger)
-    user.save() 
+def john_adds_ledger(john, ledger): 
+    john.ledgers.add(ledger)
+    john.save() 
 
 @pytest.fixture 
 def login_user(client):
