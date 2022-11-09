@@ -9,6 +9,7 @@ from django.db.utils import IntegrityError
 
 from registration.exceptions import TokenExpiredError, UnvalidatedUserError
 from registration.service import create_user, get_user, validate_user
+from frontend.forms import ChangePasswordForm
 
 pytestmark = [
     pytest.mark.django_db, 
@@ -149,4 +150,15 @@ class TestSetPasswordApiEndpoint:
         assert response.status_code == 401
         assert response.json().get('message') == "User is not validated"
 
-        
+class TestSetPasswordPage: 
+    def test_set_password_page_loads(self, client): 
+        response = client.get('/user/1/set-password')
+        assert response.status_code == 200
+    
+    def test_correct_form_is_loaded_in_the_set_password_page(self, client): 
+        response = client.get('/user/1/set-password')
+        context = response.context
+
+        assert isinstance(context['form'], ChangePasswordForm)
+
+    
