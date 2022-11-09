@@ -33,7 +33,3 @@ def test_login_page_loads(client):
 
     assert response.status_code == 200 
 
-def test_change_password_page_loads(client): 
-    response = client.get('/user/1/set-password')
-
-    assert response.status_code == 200
