@@ -35,6 +35,7 @@ class User(PermissionsMixin, AbstractBaseUser):
     validation_token = models.CharField(max_length=100, null=True) 
     first_name = models.CharField(max_length=100, null=True, blank=True)
     validation_token_issued = models.DateTimeField(auto_now_add=True)
+    require_validation = models.BooleanField(default=True)
     first_joined = models.DateTimeField(null=True)
     
     USERNAME_FIELD = 'username' 
@@ -56,17 +57,11 @@ class User(PermissionsMixin, AbstractBaseUser):
         return short_name
 
     def generate_validation_token(self, token=None): 
-        if self.validation_token is None: 
-            if token is None: 
-                self.validation_token = secrets.token_urlsafe(32) 
-            else: 
-                self.validation_token = token 
-
-            self.save() 
-            return self.validation_token
+        if self.require_validation: 
+            self.validation_token = token if token else secrets.token_urlsafe(32) 
+        return self.validation_token
     
-    def set_password(self, password, require_validation=True): 
-        if not self.is_validated and require_validation: 
-
+    def set_password(self, password): 
+        if not self.is_validated and self.require_validation: 
             raise UnvalidatedUserError("Password cannot be set on unvalidated users.") 
         super().set_password(password)
