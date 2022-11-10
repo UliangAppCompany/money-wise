@@ -1,8 +1,11 @@
-from django.shortcuts import render
-from django.contrib.auth import get_user
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth import get_user, get_user_model
 from django.urls import reverse
+from django.http import HttpResponseRedirect
 
 from account_management.models import Ledger 
+from registration.service import validate_user
 
 from .forms import AccountManagementAddAccountForm, AuthenticationForm, ChangePasswordForm
 
@@ -14,7 +17,7 @@ def add_account(request, ledger_id):
     add_account_url = reverse("api-1:add_account", kwargs={'ledger_id': 
         ledger_id})
     ledger_page = reverse("ledger-page", args=[ledger_id])
-    return render(request, 'frontend/add_account_page.html',
+    return render(request, 'account_management/add_account_page.html',
        context={
             'form': add_account_form, 
             'ledger':ledger,  
@@ -29,13 +32,22 @@ def ledger_page(request, ledger_id):
 def login_page(request): 
     form = AuthenticationForm()
     login_api_endpoint = reverse('api-1:login_user')
-    return render(request, 'frontend/login_page.html', context={
+    return render(request, 'auth/login_page.html', context={
         'form': form, 
         'post_url': login_api_endpoint
     })
 
 def set_password_page(request, user_id): 
-    return render(request, 'frontend/set_password_page.html', context={
+    return render(request, 'registration/set_password_page.html', context={
         'form': ChangePasswordForm(), 
         'url': reverse('api-1:patch_user', args=[user_id]), 
     })
+
+def validate_registration(request): 
+    token = request.GET['token'] 
+    username = request.GET['username']
+    user  = get_object_or_404(get_user_model(), username=username)
+    # breakpoint()
+    if user.token_is_valid(token): 
+        validate_user(user)
+    return HttpResponseRedirect(reverse('set-password-page',args= [ user.id ])) 
