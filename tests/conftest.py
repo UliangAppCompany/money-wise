@@ -1,6 +1,5 @@
 import os 
-import time
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pytest 
 
@@ -8,7 +7,7 @@ from django.db import connection
 from django.test import Client 
 
 from account_management.models import Journal, Ledger
-from registration.service import create_user
+from registration.service import create_user, get_user 
 
 os.environ["NINJA_SKIP_REGISTRY"] = "yes"
 
@@ -57,16 +56,22 @@ def create_cash_accounts(ledger):
     ledger.create_account(number=101, description="Cash in Bank 1", category="AS") 
     ledger.create_account(number=102, description="Cash in Bank 2", category="AS") 
 
+
 @pytest.fixture 
 def client(): 
     client_ = Client() 
     return client_ 
 
 @pytest.fixture 
-def john_adds_ledger(john, ledger): 
+def john_adds_ledger(ledger): 
+    john = get_user('john@example.com')
     john.ledgers.add(ledger)
     john.save() 
 
 @pytest.fixture 
-def login_user(client):
+def login_john(client):
     client.login(username="john@example.com", password="password")
+
+@pytest.fixture
+def init_john(): 
+    create_user('john@example.com', password='password', require_validation=False)
