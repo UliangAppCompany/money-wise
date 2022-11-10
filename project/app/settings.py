@@ -62,8 +62,8 @@ ROOT_URLCONF = "app.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
+        "DIRS": [os.path.join(BASE_DIR, 'templates')],
+        "APP_DIRS": False,
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
@@ -145,7 +145,9 @@ NINJA_DOCS_VIEW = "redoc"
 
 
 DEFAULT_FROM_EMAIL = "admin@money-wise.com.my"
-EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.dummy.EmailBackend')
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.locmem.EmailBackend')
 VALIDATION_TOKEN_EXPIRY = timedelta(hours=36)
 HOSTNAME = 'http://localhost:8080'
 CHROMEDRIVER_PATH = os.environ.get('CHROMEDRIVER_PATH', None) 
+
+API_PATH = BASE_DIR / 'api' / 'endpoints' 
