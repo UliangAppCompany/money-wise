@@ -1,8 +1,11 @@
-from django.shortcuts import render
-from django.contrib.auth import get_user
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth import get_user, get_user_model
 from django.urls import reverse
+from django.http import HttpResponseRedirect
 
 from account_management.models import Ledger 
+from registration.service import validate_user
 
 from .forms import AccountManagementAddAccountForm, AuthenticationForm, ChangePasswordForm
 
