@@ -23,8 +23,7 @@ class TestLoginPage(StaticLiveServerTestCase):
             cls.driver = webdriver.Chrome(path)
         else: 
             cls.driver = webdriver.Chrome()
-        cls.user = create_user('joe@example.com' ) 
-        cls.user.set_password('password', require_validation=False)
+        cls.user = create_user('joe@example.com', require_validation=False, password='password' ) 
         cls.user.save()
 
     @classmethod 
