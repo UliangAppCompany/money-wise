@@ -23,6 +23,5 @@ api = init_api_app(api)
 urlpatterns = [
     path("admin/", admin.site.urls), 
     path("api/", api.urls), 
-    path("registration/", include('registration.urls')), 
     path("", include("frontend.urls"))
 ]
