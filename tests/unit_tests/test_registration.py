@@ -79,11 +79,11 @@ def set_validation_token(john):
 @pytest.mark.usefixtures('set_validation_token')
 class TestValidationRoute: 
     def test_validation_url(self,client): 
-        response = client.get('/registration/validate?username=john@example.com&token=abc')
+        response = client.get('/validate?username=john@example.com&token=abc')
         assert response.status_code == 302
 
     def test_that_clicked_validation_link_validates_user(self,client, ): 
-        response =client.get('/registration/validate?username=john@example.com&token=abc')
+        response =client.get('/validate?username=john@example.com&token=abc')
         john = get_user('john@example.com')
         assert john.is_validated 
 
@@ -93,17 +93,17 @@ class TestValidationRoute:
     def test_that_user_cannot_be_validated_if_validation_link_has_expired(self, client): 
         time.sleep(0.6) 
         with pytest.raises(TokenExpiredError):
-            response = client.get('/registration/validate?username=john@example.com&token=abc')
+            response = client.get('/validate?username=john@example.com&token=abc')
         john = get_user('john@example.com')
         assert not john.is_validated
 
     def test_that_if_token_is_incorrect_user_is_not_validated(self, client,): 
-        response = client.get('/registration/validate?username=john@example.com&token=asafsiudf')
+        response = client.get('/validate?username=john@example.com&token=asafsiudf')
         john = get_user('john@example.com')
         assert not john.is_validated
 
     def test_that_if_user_not_found_response_is_404(self, client): 
-        response = client.get('/registration/validate?username=gary@example.com&token=abc')
+        response = client.get('/validate?username=gary@example.com&token=abc')
         assert response.status_code == 404
 
 
