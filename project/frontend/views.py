@@ -39,3 +39,12 @@ def set_password_page(request, user_id):
         'form': ChangePasswordForm(), 
         'url': reverse('api-1:patch_user', args=[user_id]), 
     })
+
+def validate_registration(request): 
+    token = request.GET['token'] 
+    username = request.GET['username']
+    user  = get_object_or_404(get_user_model(), username=username)
+    # breakpoint()
+    if user.token_is_valid(token): 
+        validate_user(user)
+    return HttpResponseRedirect(reverse('set-password-page',args= [ user.id ])) 
