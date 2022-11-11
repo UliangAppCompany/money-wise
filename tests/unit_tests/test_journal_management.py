@@ -1,5 +1,7 @@
 import pytest 
 
+from django.test import override_settings
+
 pytestmark = [
     pytest.mark.django_db 
 ]
@@ -51,3 +53,53 @@ class TestJournalModel:
         result = cursor.fetchall()
 
         assert result == [expected]
+
+@pytest.mark.usefixtures('init_john', 'login_john')
+class TestJournalApiEndpoint: 
+    def post_response(self, client, url, payload): 
+        response = client.post(url, data=payload, 
+            content_type='application/json' )
+        return response
+
+    # @override_settings(DEBUG=True)
+    @pytest.mark.parametrize('url,payload', [
+        ('/api/account-management/journal', {
+            'number': 1, 
+            'name': 'Company A Journal', 
+            'description': 'description' 
+        })
+    ])
+    def test_that_post_endpoint_responds(self,url, payload, client):
+        response = self.post_response(client, url, payload)
+        assert response.status_code == 200
+
+    @pytest.mark.parametrize('url,payload', [
+        ('/api/account-management/journal', {
+            'number': 1, 
+            'name': 'Company A Journal', 
+            'description': 'description' 
+        })
+    ])
+
+    def test_that_unauthenticated_user_cannot_create_journals(self, url, payload, client): 
+        client.logout()
+        response = self.post_response(client, url, payload)
+        assert response.status_code == 401
+
+    @pytest.mark.parametrize('url,payload', [
+        ('/api/account-management/journal', {
+            'number': 1, 
+            'name': 'Company A Journal', 
+            'description': 'description' 
+        })
+    ])
+    def test_that_post_endpoint_responds(self,url, payload, client, cursor):
+        self.post_response(client, url, payload) 
+
+        cursor.execute("select name from account_management_journal where "
+            " number = 1 and account_management_journal.user_id = ( "
+            " select id from registration_user where username = 'john@example.com' )")
+        result = cursor.fetchone()
+
+        assert result == ("Company A Journal", )
+
