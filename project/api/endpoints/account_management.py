@@ -5,7 +5,8 @@ from django.contrib.auth import get_user
 
 from ..schemas import LedgerSchema, LedgerResponseSchema
 from ..schemas import AccountSchema, AccountResponseSchema
-from account_management.models import Ledger, Account
+from ..schemas import JournalSchema, JournalResponseSchema
+from account_management.models import Ledger, Account, Journal
 
 
 router = Router()
@@ -26,3 +27,10 @@ def add_account(request, ledger_id:int, data:AccountSchema):
     ledger.save()
     return account
     
+@router.post('/journal', auth=django_auth, response=JournalResponseSchema )
+def add_journal(request, data: JournalSchema): 
+    user = get_user(request)
+    journal = Journal.objects.create(**dict(data)) 
+    user.journals.add(journal)
+    user.save()
+    return journal
