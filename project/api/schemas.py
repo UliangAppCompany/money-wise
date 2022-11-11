@@ -2,8 +2,18 @@ from ninja import ModelSchema, Schema
 
 from django.contrib.auth import get_user_model
 
-from account_management.models import Account,Ledger
+from account_management.models import Account,Ledger, Journal
 
+
+class JournalSchema(ModelSchema): 
+    class Config: 
+        model = Journal 
+        model_fields = ['number', 'name', 'description']
+
+class JournalResponseSchema(ModelSchema): 
+    class Config: 
+        model = Journal 
+        model_exclude = ['user']
 
 class UserSchema(Schema): 
     username: str 
