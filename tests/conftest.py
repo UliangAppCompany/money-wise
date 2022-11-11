@@ -52,9 +52,16 @@ def collect_from_cash_register(ledger, journal):
             })
 
 @pytest.fixture 
+def create_current_account(ledger): 
+    account = ledger.create_account(number=100, description="Current Assets", category="AS")
+    account.is_control = True 
+    account.save()
+
+@pytest.fixture 
 def create_cash_accounts(ledger):
     ledger.create_account(number=101, description="Cash in Bank 1", category="AS") 
     ledger.create_account(number=102, description="Cash in Bank 2", category="AS") 
+
 
 
 @pytest.fixture 
