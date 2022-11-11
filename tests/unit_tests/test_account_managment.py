@@ -60,39 +60,55 @@ class TestAccountModel:
 
 
 @pytest.mark.usefixtures('init_john', 'john_adds_ledger', 'login_john')
-class TestAccountApiEndpoint: 
-    def post_response(self, client, ledger): 
-        response = client.post(f'/api/account-management/ledger/{ledger.id}/account', data={
-            'number': 100, 
-            'name': 'Cash', 
-            "description": "Description", 
-            "notes": "Cash on hand.", 
-            'category': "AS", 
-            'is_control': False, 
-            "debit_account": True}, 
-        content_type="application/json")  
-        
+@pytest.mark.parametrize('url,payload', [
+    ('/api/account-management/ledger/{ledger_id}/account', {
+        'number': 101, 
+        'name': 'Cash in Bank', 
+        "description": "Description", 
+        "notes": "Cash deposited in Bank A.", 
+        'category': "AS", 
+        'is_control': False, 
+        "debit_account": True}, 
+    ), 
+    ('/api/account-management/ledger/{ledger_id}/account', {
+        "number": 100, 
+        "name": "Current assets", 
+        "description": "description", 
+        "notes": "Assets than can be liquidated in one year", 
+        "category": 'AS', 
+        "is_control": True, 
+        "debit_account":True
+    })
+])
+class TestAccountPostEndpoint: 
+    def post_response(self, client, ledger, url, payload): 
+        response = client.post(url.format(ledger_id=ledger.id), data=payload, 
+            content_type='application/json')  
         return response
 
-    def test_add_account_view_returns_ok_status(self, client, ledger): 
-        response = self.post_response(client, ledger)
+    def execute_sql_statement(self, cursor, account_number, ledger_id, username): 
+        cursor.execute("select * from account_management_account "
+            " join account_management_ledger on account_management_account.ledger_id = account_management_ledger.id "
+            " where account_management_account.number = %s " 
+            " and ledger_id = %s "
+            " and user_id = (select id from registration_user where username = %s)", [account_number, ledger_id, username] )
+
+        return cursor.fetchall() 
+
+    def test_add_account_view_returns_ok_status(self,url, payload, client, ledger): 
+        response = self.post_response(client, ledger, url, payload)
         assert response.status_code == 200 
 
-    def test_add_account_view_adds_resource_to_db(self, client, ledger, cursor): 
-        self.post_response(client, ledger)
+    def test_add_account_view_adds_resource_to_db(self,url,payload, client, ledger, cursor): 
+        response = self.post_response(client, ledger, url, payload)
+        result = self.execute_sql_statement(cursor, payload['number'],ledger.id, 'john@example.com')
 
-        cursor.execute("select * from account_management_account "
-            " join account_management_ledger on account_management_account.ledger_id = account_management_ledger.id " 
-            " where account_management_account.number = 100 "
-            " and account_management_ledger.user_id = (select id from registration_user " 
-            " where username = 'john@example.com')")
-        result = cursor.fetchall()
+        assert len(result) != 0
 
-        assert len(result) != 0 
-
-    def test_that_cannot_make_unauthenticated_api_calls(self, client, ledger): 
+    def test_that_cannot_make_unauthenticated_api_calls(self, url, payload, client, ledger): 
         client.logout()
-        response = self.post_response(client, ledger)
+        response = self.post_response(client, ledger, url, payload)
+        
         assert response.status_code == 401
             
 @pytest.mark.usefixtures(
