@@ -227,6 +227,8 @@ class Journal(models.Model):
     description = models.TextField(null=True, blank=True) 
     created_on = models.DateTimeField(auto_now_add=True) 
     updated_on = models.DateTimeField(auto_now=True) 
+    user = models.ForeignKey('registration.User', on_delete=models.CASCADE, related_name='journals', 
+        null=True)
 
     double_entry_created = Signal() 
 
