@@ -95,6 +95,67 @@ class TestAccountApiEndpoint:
         response = self.post_response(client, ledger)
         assert response.status_code == 401
             
+@pytest.mark.usefixtures(
+    "create_current_account",
+    "init_john", 
+    "john_adds_ledger",
+    "login_john" ) 
+@pytest.mark.parametrize('url,payload', [
+    ('/api/account-management/ledger/{ledger_id}/account/{account_id}', {
+        'number': 100, 
+        'name': 'Current Assets', 
+        'description': 'description', 
+        'notes': 'notes', 
+        'category': 'AS', 
+        'is_control': True, 
+        'debit_account': True, 
+        'subaccounts': [
+            {
+                'number': 101, 
+                "name": "Cash in Bank A", 
+                "description": "Deposits in Bank A", 
+                "notes": "notes", 
+                "category": "AS", 
+                "is_control": False, 
+                "debit_account": True, 
+            }, 
+            {
+                "number": 102, 
+                "name": "Petty Cash", 
+                "description": "description", 
+                "notes": "notes", 
+                "category": "AS", 
+                "is_control": False, 
+                "debit_account": True
+            }
+        ]
+    })
+])
+class TestAccountPutEndpoint: 
+    def put_response(self, client, ledger, url, payload): 
+        control_account = ledger.get_account(payload['number']) 
+        payload['id'] = control_account.id
+        response = client.put(url.format(ledger_id=ledger.id, account_id=control_account.id), 
+            data=payload, content_type='application/json')
+        return response
+
+    def execute_sql_statement(self, cursor, control_account): 
+        cursor.execute("select number from account_management_account "
+            "where control_id = ( select id from account_management_account "
+            "where number = %s )", [control_account.number])
+        return cursor.fetchall() 
+
+    def test_that_classifying_accounts_returns_ok_status(self, url, payload, client, ledger): 
+        response = self.put_response(client, ledger, url, payload)
+        
+        assert response.status_code == 200
+
+    def test_that_accounts_are_properly_classified_at_the_db_level(self, url, payload, client, ledger, cursor): 
+        self.put_response(client, ledger, url, payload) 
+        control_account = ledger.get_account(payload['number'])
+        result = self.execute_sql_statement(cursor, control_account)
+
+        assert result == [(suba['number'], ) for suba in payload['subaccounts'] ]
 
 @pytest.mark.usefixtures('init_john', 'john_adds_ledger', 'login_john')
 class TestAccountManagementFrontend:
