@@ -2,10 +2,12 @@ from ninja import  Router
 from ninja.security import django_auth
 
 from django.contrib.auth import get_user
+from django.shortcuts import get_object_or_404
 
 from ..schemas import LedgerSchema, LedgerResponseSchema
 from ..schemas import AccountSchema, AccountResponseSchema
 from ..schemas import JournalSchema, JournalResponseSchema
+from ..schemas import CategorizeAccountResponseSchema, CategorizeAccountSchema
 from account_management.models import Ledger, Account, Journal
 
 
@@ -34,3 +36,14 @@ def add_journal(request, data: JournalSchema):
     user.journals.add(journal)
     user.save()
     return journal
+
+@router.put('/ledger/{ledger_id}/account/{account_id}', 
+    response=CategorizeAccountResponseSchema, 
+    auth=django_auth)
+def categorize_account(request, ledger_id:int, account_id:int, data: CategorizeAccountSchema):
+    ledger = get_object_or_404(Ledger, id=ledger_id)
+    control_account = get_object_or_404(Account, id=account_id)
+    control_account.add_subaccounts(*[
+        Account.objects.get_or_create(ledger=ledger, **dict(obj))[0] for obj in data.subaccounts
+    ])
+    return control_account
