@@ -44,8 +44,19 @@ class AccountSchema(ModelSchema):
         model = Account 
         model_exclude = ['control', 'id', 'ledger', 'created_on', 'updated_on']
 
+class CategorizeAccountSchema(ModelSchema): 
+    class Config:
+        model = Account 
+        model_exclude = ['control', 'ledger', 'created_on', 'updated_on']
+    subaccounts: list[AccountSchema]
+    
 class AccountResponseSchema(ModelSchema): 
     class Config:
         model = Account 
         model_fields = '__all__'
 
+class CategorizeAccountResponseSchema(ModelSchema): 
+    class Config:
+        model = Account 
+        model_exclude = ['control']
+    subaccounts: list[AccountResponseSchema]
