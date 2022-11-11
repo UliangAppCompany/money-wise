@@ -1,7 +1,8 @@
 import pytest
 
-from account_management.service import record_balance
+from django.test import override_settings
 
+from account_management.service import record_balance
 from account_management.models import Ledger
 from frontend.forms import AccountManagementAddAccountForm
 
@@ -172,6 +173,36 @@ class TestAccountPutEndpoint:
         result = self.execute_sql_statement(cursor, control_account)
 
         assert result == [(suba['number'], ) for suba in payload['subaccounts'] ]
+
+@pytest.mark.usefixtures(
+    'create_current_account', 
+    'create_cash_accounts', 
+    'categorize_accounts', 
+    'init_john', 
+    'john_adds_ledger', 
+    'login_john'
+)
+@pytest.mark.parametrize('url,expected', [
+    ('/api/account-management/ledger/{ledger_id}/account?category=100', 2)
+])
+class TestAccountGetEndpoint: 
+    def get_response(self, client, url, ledger): 
+        response = client.get(url.format(ledger_id=ledger.id))
+        return response
+
+    @override_settings(DEBUG=True)
+    def test_that_get_request_returns_ok_response(self, url, expected, client, ledger): 
+        response = self.get_response(client, url, ledger)
+        assert response.status_code == 200
+
+    def test_that_correct_number_of_items_are_returned(self, url, expected, client, ledger): 
+        response = self.get_response(client, url, ledger) 
+        items = response.json()
+        assert len(items) == expected
+
+
+
+
 
 @pytest.mark.usefixtures('init_john', 'john_adds_ledger', 'login_john')
 class TestAccountManagementFrontend:
