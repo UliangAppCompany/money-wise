@@ -21,6 +21,15 @@ def add_ledger(request, data: LedgerSchema):
     user.save()
     return ledger
 
+@router.get('/ledger/{ledger_id}/account', response = list[AccountResponseSchema]) 
+def list_accounts(request, ledger_id:int, category:int = 0):  
+    ledger =Ledger.objects.get(id=ledger_id) 
+
+    results = ledger.get_account(category).subaccounts.all() \
+        if category else Account.objects.filter(ledger=ledger, is_control=False).all()
+
+    return results
+
 @router.post("/ledger/{ledger_id}/account", response = AccountResponseSchema,  
      auth=django_auth)
 def add_account(request, ledger_id:int, data:AccountSchema): 
