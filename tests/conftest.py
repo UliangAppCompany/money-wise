@@ -59,11 +59,16 @@ def create_current_account(ledger):
 
 @pytest.fixture 
 def create_cash_accounts(ledger):
-    ledger.create_account(number=101, description="Cash in Bank 1", category="AS") 
-    ledger.create_account(number=102, description="Cash in Bank 2", category="AS") 
+    acc101 = ledger.create_account(number=101, description="Cash in Bank 1", category="AS") 
+    acc102 = ledger.create_account(number=102, description="Cash in Bank 2", category="AS") 
+    
 
-
-
+@pytest.fixture 
+def categorize_accounts(ledger): 
+    cash = ledger.get_account(100)
+    cash.add_subaccounts(*[ledger.get_account(n) for n in (101, 102)])
+    cash.save()
+    
 @pytest.fixture 
 def client(): 
     client_ = Client() 
