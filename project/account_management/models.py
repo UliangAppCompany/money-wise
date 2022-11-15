@@ -208,14 +208,11 @@ class Entry(models.Model):
     """
     Entries are a collection of Transactions, date of transaction and description of transaction.  
     """
-    date = models.DateTimeField(auto_now=True) 
-    notes = models.TextField(blank=True, default=None)
+    date = models.DateTimeField() 
+    note = models.TextField(blank=True, default=None)
 
     journal = models.ForeignKey("Journal", on_delete=models.CASCADE, 
         related_name="entries") 
-
-
-TransDetails = dict[Literal['debit_amount'] | Literal['credit_amount'], float]
 
 
 class Journal(models.Model): 
@@ -235,35 +232,17 @@ class Journal(models.Model):
     def __repr__(self): 
         return f"Journal({self.number} - {self.name})" 
 
-    def create_double_entry(self, ledger, date, notes, transactions: dict[int, TransDetails]): 
-        check = 0
-        transaction_objects = [] 
-        for account_number, trans_details in transactions.items(): 
-            db_amount, cr_amount = trans_details['debit_amount'], trans_details['credit_amount']
-            check += db_amount - cr_amount 
-            account = ledger.get_account(number=account_number) 
-            
-            if db_amount and cr_amount:
-                raise IncorrectEntryFormatError("No two debit amount and credit amount can be nonzero.")
-            elif cr_amount and db_amount==0: 
-                msg = f"from {account_number}-{account.description} account"
-            else: 
-                msg = f"to {account_number}-{account.description} account"
-            
-            transaction = Transaction(account=account,  
-                debit_amount=db_amount,
-                credit_amount=cr_amount, 
-                description=msg)
-            transaction_objects.append(transaction)
+    def check_valid_double_entry(self, transactions): 
+        return sum(t.debit_amount - t.credit_amount for t in transactions) == 0
 
-        if check: 
+    def create_double_entry(self, date, note, transactions):
+        if not self.check_valid_double_entry(transactions): 
             raise DoubleEntryError()        
-        
-        Transaction.objects.bulk_create(transaction_objects)
 
-        entry = Entry.objects.create(date=date, notes=notes, journal=self) 
-        entry.transactions.add(*transaction_objects)
+        entry = Entry.objects.create(date=date, note=note, journal=self) 
+        entry.transactions.add(*transactions)
         entry.save()
 
         self.double_entry_created.send(sender=Entry, instance=entry)
+        return entry
 

@@ -81,6 +81,12 @@ def john_adds_ledger(ledger):
     john.save() 
 
 @pytest.fixture 
+def john_adds_journal(journal): 
+    john = get_user('john@example.com')
+    john.journals.add(journal) 
+    john.save()
+    
+@pytest.fixture 
 def login_john(client):
     client.login(username="john@example.com", password="password")
 

@@ -1,14 +1,20 @@
+from traceback import format_exception 
 from ninja import  Router
 from ninja.security import django_auth
 
 from django.contrib.auth import get_user
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 
 from ..schemas import LedgerSchema, LedgerResponseSchema
 from ..schemas import AccountSchema, AccountResponseSchema
 from ..schemas import JournalSchema, JournalResponseSchema
 from ..schemas import CategorizeAccountResponseSchema, CategorizeAccountSchema
-from account_management.models import Ledger, Account, Journal
+from ..schemas import EntrySchema, EntryResponseSchema
+from ..schemas import Errors
+
+from account_management.models import Ledger, Account, Journal, Transaction
+from account_management.exceptions import DoubleEntryError
 
 
 router = Router()
@@ -46,6 +52,29 @@ def add_journal(request, data: JournalSchema):
     user.save()
     return journal
 
+@router.post('/journal/{journal_id}/entry', response={200: EntryResponseSchema, 
+    400: Errors},  auth=django_auth)
+def add_entry(request, journal_id:int, data:EntrySchema): 
+    journal = Journal.objects.get(id=journal_id) 
+    user = get_user(request) 
+    transactions = [] 
+    for transaction in data.transactions:
+        account = Account.objects.filter(ledger__user = user, number=transaction.number).get()
+        transactions.append(
+            Transaction.objects.create(account=account, 
+                debit_amount=transaction.debit_amount, 
+                credit_amount=transaction.credit_amount, 
+                description=transaction.description) 
+        )          
+    try: 
+        entry = journal.create_double_entry(date=data.date, note=data.note, 
+            transactions=transactions )
+        journal.save() 
+    except DoubleEntryError as exc: 
+        tb = format_exception(exc) if settings.DEBUG else [] 
+        return 400, Errors(message=str(exc), tb=tb) 
+    return 200, entry
+
 @router.put('/ledger/{ledger_id}/account/{account_id}', 
     response=CategorizeAccountResponseSchema, 
     auth=django_auth)
@@ -56,3 +85,4 @@ def categorize_account(request, ledger_id:int, account_id:int, data: CategorizeA
         Account.objects.get_or_create(ledger=ledger, **dict(obj))[0] for obj in data.subaccounts
     ])
     return control_account
+
