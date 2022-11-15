@@ -208,8 +208,8 @@ class Entry(models.Model):
     """
     Entries are a collection of Transactions, date of transaction and description of transaction.  
     """
-    date = models.DateTimeField(auto_now=True) 
-    notes = models.TextField(blank=True, default=None)
+    date = models.DateTimeField() 
+    note = models.TextField(blank=True, default=None)
 
     journal = models.ForeignKey("Journal", on_delete=models.CASCADE, 
         related_name="entries") 
