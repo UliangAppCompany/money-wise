@@ -6,7 +6,7 @@ import pytest
 from django.db import connection 
 from django.test import Client 
 
-from account_management.models import Journal, Ledger
+from account_management.models import Journal, Ledger, Transaction
 from registration.service import create_user, get_user 
 
 os.environ["NINJA_SKIP_REGISTRY"] = "yes"
@@ -41,15 +41,25 @@ def add_accounts_to_ledger(ledger):
     ledger.create_account(number=300, description="Revenue", debit_account=False, 
         category="RV")
     
+@pytest.fixture 
+def collection_transactions(ledger): 
+    cash_account = ledger.get_account(100) 
+    debit_trans = Transaction(account=cash_account, debit_amount=1050, 
+        description='from 300-Revenue account') 
+
+    rev_account = ledger.get_account(300) 
+    credit_trans = Transaction(account=rev_account, credit_amount=1050, 
+        description='to 100-Cash account')
+
+    Transaction.objects.bulk_create([debit_trans, credit_trans])
+    return debit_trans, credit_trans
 
 @pytest.fixture 
-def collect_from_cash_register(ledger, journal): 
+def collect_from_cash_register(journal, collection_transactions): 
     now = datetime.utcnow()
-    journal.create_double_entry(ledger, date=now, notes="being collections from cash register", 
-            transactions = {
-                300: {'credit_amount': 1050, 'debit_amount': 0}, 
-                100: {'credit_amount': 0, 'debit_amount': 1050}
-            })
+    journal.create_double_entry(date=now, 
+        note="being collections from cash register", 
+        transactions=collection_transactions)
 
 @pytest.fixture 
 def create_current_account(ledger): 
