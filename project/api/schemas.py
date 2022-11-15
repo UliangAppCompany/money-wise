@@ -2,8 +2,35 @@ from ninja import ModelSchema, Schema
 
 from django.contrib.auth import get_user_model
 
-from account_management.models import Account,Ledger, Journal
+from account_management.models import ( Account,Ledger, Journal, Entry, 
+Transaction )
 
+class Errors(Schema): 
+    message: str 
+    tb: list[str]
+
+class TransactionSchema(ModelSchema): 
+    class Config: 
+        model =  Transaction
+        model_fields = ['debit_amount', 'credit_amount', 'description']
+    number: int
+
+class EntrySchema(ModelSchema): 
+    transactions : list[TransactionSchema]    
+    class Config: 
+        model = Entry
+        model_fields = ['date', 'note']
+
+class TransactionResponseSchema(ModelSchema): 
+    class Config: 
+        model = Transaction 
+        model_fields = '__all__'
+
+class EntryResponseSchema(ModelSchema): 
+    transactions : list[TransactionResponseSchema]
+    class Config: 
+        model = Entry 
+        model_fields = '__all__'
 
 class JournalSchema(ModelSchema): 
     class Config: 
